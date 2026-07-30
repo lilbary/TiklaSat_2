@@ -83,6 +83,8 @@ Bu bölüm, ilk gereksinim taslağına göre **değişen** kararları ve gerekç
 
 Soldaki formül teklifler arasında sadece 30 saniye geçmesine rağmen bitişi 2'şer dakika ileri atar; süre teklif sayısıyla şişer. Sağdaki formül ise değişmez bir garanti verir: **son teklifin üzerinden 120 saniye geçmeden açık artırma bitmez.** Anti-sniping'in amacı tam olarak budur.
 
+**Tavan hakkında önemli bir düzeltme:** `şimdi + 120sn` formülünde her uzatma **tam olarak** 120 saniye değil, **0 ile 120 saniye arası** bir süre ekler (teklif pencerenin neresinde geldiğine bağlı — pencerenin tam başında gelen teklif hiç uzatmaz, son ana yakın gelen teklif 120 saniyeye yaklaşır). Bu yüzden 20 uzatma tavanı, en iyimser senaryoda bile toplamda **60 dakikaya değil, ~40 dakikaya** kadar çıkabilir. Yani pratikte **20'lik sayaç tavanı her zaman önce dolar**; 60 dakikalık veritabanı kısıtı (`ck_auctions_extension_window`) bugünkü parametrelerle **hiçbir zaman tetiklenmeyen**, yalnızca ileride pencere/uzatma süresi büyütülürse diye konmuş bağımsız bir alt güvenlik ağıdır. İki tavan **birbiriyle yarışmaz** — ayrıntı için `ADR-0006`.
+
 **Yeni kural:** → `BR-A-006`
 
 ---
@@ -156,7 +158,7 @@ Ayrıca **Alıcı ve Satıcı ayrı hesap türleri değildir.** sahibinden.com'd
 | **BR-A-003** | Satıcı isteğe bağlı **rezerv fiyat** (`reserve_price`) belirleyebilir: altında satmayı kabul etmediği gizli taban. Rezerv fiyat başlangıç fiyatından küçük olamaz ve **teklif verenlere gösterilmez** — yalnızca "rezerv fiyata ulaşıldı/ulaşılmadı" bilgisi gösterilir. | OLMALI |
 | **BR-A-004** | Süre en az **1 saat**, en fazla **14 gün**. Satıcı 1/3/7/14 günlük hazır seçeneklerden birini seçer. | ZORUNLU |
 | **BR-A-005** | Durumlar: `SCHEDULED` → `ACTIVE` → (`ENDED_SOLD` \| `ENDED_NO_BIDS` \| `ENDED_RESERVE_NOT_MET` \| `CANCELLED`). | ZORUNLU |
-| **BR-A-006** | **Sniper koruması.** Bitişe **120 saniye** veya daha az kala kabul edilen her teklif, bitiş zamanını **`teklif_anı + 120 saniye`** olarak günceller. Tavan: en fazla **20 uzatma** *veya* toplam **60 dakika** — hangisi önce dolarsa uzatma durur. Her uzatma denetim kaydına yazılır. | ZORUNLU |
+| **BR-A-006** | **Sniper koruması.** Bitişe **120 saniye** veya daha az kala kabul edilen her teklif, bitiş zamanını **`teklif_anı + 120 saniye`** olarak günceller. İki bağımsız tavan: **20 uzatma** (gerçek tavan — pratikte ~40 dakikada dolar) *ve* toplam **60 dakika** (bugünkü parametrelerle hiç ulaşılamayan, ileriye dönük alt güvenlik ağı — bkz. §0 D-2). Her uzatma denetim kaydına yazılır. | ZORUNLU |
 | **BR-A-007** | Açık artırmayı **sistem** kapatır, kullanıcı isteği değil. Siteye kimse girmese bile artırma zamanında sonlanır. | ZORUNLU |
 | **BR-A-008** | Kapanışta kazanan = **en yüksek geçerli teklifin** sahibi. Rezerv fiyat varsa ve en yüksek teklif altında kaldıysa sonuç `ENDED_RESERVE_NOT_MET` olur; kazanan yoktur ve satış zorunluluğu doğmaz. | ZORUNLU |
 | **BR-A-009** | Hiç teklif gelmediyse sonuç `ENDED_NO_BIDS` olur. | ZORUNLU |
@@ -276,7 +278,7 @@ Bunlar **unutulmuş** değil, **bilinçli olarak ertelenmiş** özelliklerdir. �
 | Açık artırma süresi | 1 saat – 14 gün |
 | Sniper penceresi | Son 120 saniye |
 | Sniper uzatması | `şimdi + 120 sn` |
-| Uzatma tavanı | 20 kez **veya** toplam 60 dk |
+| Uzatma tavanı | 20 kez (gerçek tavan, ~40 dk) · 60 dk DB kısıtı asla ulaşılamayan güvenlik ağı |
 | Teklif artışı | Kademeli tablo (§5.1) |
 | Parola | ≥ 10 karakter, Argon2id |
 | Erişim token'ı | 15 dakika |

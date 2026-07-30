@@ -9,8 +9,6 @@
 Bu sözlük iki nedenle var:
 
 1. **Ortak dil.** Aynı şeye iki farklı isim verilirse dokümanlar çelişir. Burada bir terimin karşılığı ne ise, kodda ve tabloda da odur.
-2. **Savunma hazırlığı.** Staj sunumunda kullanılan her teknik terimin tek cümlelik, ezberlenebilir bir açıklaması burada.
-
 ---
 
 ## A. Açık Artırma Alan Terimleri
@@ -43,7 +41,9 @@ Açık artırmanın **son saniyelerinde** teklif verip diğerlerine karşılık 
 **Neden sorun?** Fiyatın gerçek değerine ulaşmasını engeller ve deneyimsiz kullanıcıyı sistematik olarak dezavantajlı bırakır — kazanan en çok değer veren değil, en hızlı tıklayan olur.
 
 ### Anti-sniping / Sniper koruması
-Son anlarda gelen teklifin süreyi otomatik uzatması. Böylece **her teklife karşılık verme fırsatı** doğar. TıklaSat kuralı: son 120 saniyede gelen teklif bitişi `teklif_anı + 120 sn` yapar; en fazla 20 uzatma veya toplam 60 dakika (`BR-A-006`).
+Son anlarda gelen teklifin süreyi otomatik uzatması. Böylece **her teklife karşılık verme fırsatı** doğar. TıklaSat kuralı: son 120 saniyede gelen teklif bitişi `teklif_anı + 120 sn` yapar (`BR-A-006`).
+
+**Dikkat — iki tavan var, eşit değiller:** `şimdi + 120sn` formülünde her uzatma tam 120 saniye değil, **0–120 saniye arası** bir şey ekler (teklif pencerenin neresinde geldiğine bağlı). Bu yüzden **20 uzatma** tavanı en iyimser senaryoda bile toplamda ancak **~40 dakikaya** ulaşır — pratikte gerçek tavan budur. **60 dakikalık** veritabanı kısıtı ise bugünkü parametrelerle **hiç tetiklenmeyen**, yalnızca ileride pencere/uzatma süresi büyürse diye konmuş bağımsız bir alt güvenlik ağıdır (bkz. `ADR-0006`).
 
 ### Vekil teklif / Otomatik artırma (proxy bidding)
 Kullanıcının ödemeye razı olduğu **maksimum** tutarı girmesi ve sistemin onun adına, gerektiği kadar, kademe kademe artırması. eBay'in temel mekanizması.

@@ -92,7 +92,9 @@ Yöntem: **başarısız olması beklenen** işlemler denendi. Bir kısıtın var
 | `CANCELLED` ama gerekçe yok | `BR-A-012` | ✅ reddedildi |
 | Aynı ilana 2. açık artırma | `BR-A-001` | ✅ reddedildi |
 
-> **En önemli iki satır:** Sniper korumasının 60 dakikalık tavanı veritabanı seviyesinde gerçekten zorlanıyor. Kodda hata olsa veya biri elle `UPDATE` çalıştırsa bile "sonsuza kadar uzayan artırma" oluşamıyor. 59 dakikalık uzatmanın kabul edilmesi de sınırın doğru yerde olduğunu gösteriyor.
+> **En önemli iki satır:** Sniper korumasının 60 dakikalık **mutlak** tavanı veritabanı seviyesinde gerçekten zorlanıyor. Kodda hata olsa veya biri elle `UPDATE` çalıştırsa bile "sonsuza kadar uzayan artırma" oluşamıyor.
+>
+> Bu iki test, `ends_at` alanına **doğrudan** `UPDATE` ile (uygulama mantığını atlayarak) 59/61 dakikalık değerler yazmayı deniyor — yani yalnızca `ck_auctions_extension_window` kısıtının **yapısal olarak** çalıştığını kanıtlıyor. Gerçek teklif akışında (`applyAntiSnipe`) bu 60 dakikalık sınıra **hiçbir zaman ulaşılmaz**: 20 uzatma tavanı, her uzatmanın en fazla ~120sn eklediği mekanizmayla ~40 dakikada dolar ve her zaman önce devreye girer. 60 dakikalık kısıt, pencere/uzatma süresi ileride büyütülürse diye konmuş bağımsız bir alt güvenlik ağıdır — bugünkü parametrelerle bilinçli olarak "asla tetiklenmeyen" bir test senaryosudur (`ADR-0006`).
 
 ### Teklif kuralları
 

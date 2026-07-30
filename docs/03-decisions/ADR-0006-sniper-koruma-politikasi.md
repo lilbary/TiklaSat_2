@@ -35,10 +35,14 @@ Neden bir sorun:
 |---|---|
 | Tetikleme penceresi | Bitişe **≤ 120 saniye** kala |
 | Yeni bitiş zamanı | **`teklif_anı + 120 saniye`** |
-| Uzatma sayısı tavanı | **20** |
-| Toplam uzatma tavanı | **60 dakika** (orijinal bitişten itibaren) |
-| Tavan davranışı | Hangisi önce dolarsa uzatma durur |
+| Uzatma sayısı tavanı | **20** — *bugünkü parametrelerle gerçek tavan budur (~40 dk)* |
+| Toplam uzatma tavanı | **60 dakika** (orijinal bitişten itibaren) — *bağımsız, ileriye dönük alt güvenlik ağı; bugün hiç tetiklenmez* |
+| Tavan davranışı | İki tavan **bağımsızdır**, birbiriyle yarışmaz — ayrıntı aşağıda |
 | Denetim | Her uzatma `auction_extensions` tablosuna kaydedilir |
+
+> ⚠️ **Bu iki tavan eşit ağırlıkta değildir — birlikte tasarlandığında gözden kaçan bir nokta.** `şimdi + 120sn` formülünde her uzatma tam 120 saniye değil, **0–120 saniye arası** bir şey ekler (teklif pencerenin neresinde geldiğine bağlı; bkz. `business-rules.md` §0 D-2'deki tablo). Bu yüzden 20 uzatma, en iyimser senaryoda bile toplamda ancak **~40 dakikaya** ulaşır — asla 60 dakikaya değil.
+>
+> Sonuç: **20'lik sayaç pratikte her zaman önce dolar.** 60 dakikalık veritabanı kısıtı bugünkü parametrelerle (120sn pencere, 120sn uzatma, 20 sayaç) **hiçbir zaman tetiklenmez.** Bu bir hata değil, bilinçli bir tasarımdır: pencere veya uzatma süresi ileride büyütülürse (örn. `Vasıta` kategorisi için 5 dakikaya çıkarılırsa) sistemin yine de aşamayacağı **mutlak, parametre-bağımsız** bir üst sınır olsun diye konmuştur. Ancak bu ayrım ilk yazımda net değildi ve "hangisi önce dolarsa" ifadesi iki tavanın eşit olasılıkla yarıştığı izlenimini veriyordu — düzeltildi.
 
 Tavan **veritabanı seviyesinde** de zorlanır:
 
@@ -104,7 +108,7 @@ Anti-sniping'in amacı tam olarak budur: herkesin son teklife karşılık verebi
 ### Olumlu
 - Sniping ekonomik olarak anlamsızlaşır: son saniye teklifi karşılıksız kalmaz
 - Kural tek cümlede ifade edilebilir → kullanıcıya açıklanabilir, arayüzde gösterilebilir
-- Tavan sayesinde artırmanın **en geç** ne zaman biteceği baştan bellidir (`original_ends_at + 60 dk`)
+- Veritabanı kısıtı sayesinde artırmanın **mutlak en geç** bitiş sınırı baştan bellidir (`original_ends_at + 60 dk`); bugünkü parametrelerle pratik tavan ise çok daha erken, ~40 dk'da dolar (20 uzatma sayaç tavanı)
 - Tavan veritabanı kısıtıyla da zorlandığı için, kodda hata olsa veya biri elle `UPDATE` çalıştırsa bile "sonsuza kadar uzayan artırma" **yapısal olarak imkânsızdır**
 - `auction_extensions` tablosu sayesinde her uzatma şeffaftır; kullanıcı itirazında hangi teklifin ne zaman uzatma yaptığı satır satır gösterilebilir
 

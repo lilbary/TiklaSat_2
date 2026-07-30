@@ -648,7 +648,9 @@ Ek fayda: ilan içeriği (moderasyon alanı) ile fiyat mekanizması (ticaret ala
 | `ck_auctions_winner_consistency` | `status='ENDED_SOLD'` ⟺ `winner_user_id IS NOT NULL` | `BR-A-008` |
 | `ck_auctions_cancellation` | `status='CANCELLED'` ⟹ `cancellation_reason IS NOT NULL` | `BR-A-012` |
 
-> **`ck_auctions_extension_window` neden özel?** Sniper korumasının 60 dakikalık tavanını **veritabanı seviyesinde** garanti eder. Kodda bir hata olsa, birisi elle `UPDATE` çalıştırsa bile bir açık artırma orijinal bitişinden 60 dakikadan fazla uzayamaz. "Sonsuza kadar uzayan artırma" senaryosu yapısal olarak imkânsız hale gelir.
+> **`ck_auctions_extension_window` neden özel?** Sniper korumasının 60 dakikalık **mutlak** tavanını veritabanı seviyesinde garanti eder. Kodda bir hata olsa, birisi elle `UPDATE` çalıştırsa bile bir açık artırma orijinal bitişinden 60 dakikadan fazla uzayamaz. "Sonsuza kadar uzayan artırma" senaryosu yapısal olarak imkânsız hale gelir.
+>
+> ⚠️ **Bu 60 dakika, `ck_auctions_extension_count` (max 20) ile eşit ağırlıkta iki tavan değildir.** `şimdi + 120sn` formülünde her uzatma en fazla ~120 saniye ekler; 20 uzatma en iyimser senaryoda bile toplamda ancak ~40 dakikaya ulaşır. Yani **20'lik sayaç pratikte her zaman önce dolar** ve 60 dakikalık kısıt bugünkü parametrelerle hiç tetiklenmez — yalnızca pencere/uzatma süresi ileride büyütülürse diye konmuş bağımsız bir alt güvenlik ağıdır (`ADR-0006`).
 >
 > **`ck_auctions_duration` neden `original_ends_at` üzerinde?** `ends_at` uzatmalarla kayar; 14 günlük bir artırma uzatmalarla 14 gün + 60 dakikaya çıkabilir. Süre sınırı satıcının **seçtiği** süreye uygulanmalıdır, uzatılmış haline değil.
 

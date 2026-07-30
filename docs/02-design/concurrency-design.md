@@ -331,7 +331,11 @@ private Optional<AuctionExtension> applyAntiSnipe(Auction auction, Bid bid, Inst
     Instant previousEnd = auction.getEndsAt();
     Instant newEnd      = now.plus(SNIPE_EXTENSION);
 
-    // 60 dakikalık toplam tavan · DB'de ck_auctions_extension_window ile de zorlanır
+    // 60 dakikalık toplam tavan · DB'de ck_auctions_extension_window ile de zorlanır.
+    // NOT: Bu kod yolunda pratikte hiç tetiklenmez — MAX_EXTENSIONS (20) sayaç
+    // tavanı, her uzatmanın en fazla ~120sn eklediği bu mekanizmayla ~40 dakikada
+    // dolar. 60 dakikalık sınır, pencere/uzatma süresi ileride büyütülürse diye
+    // konmuş bağımsız bir üst güvenlik ağıdır (BR-A-006, ADR-0006).
     Instant hardCap = auction.getOriginalEndsAt().plus(Duration.ofMinutes(60));
     if (newEnd.isAfter(hardCap)) {
         newEnd = hardCap;
@@ -661,7 +665,7 @@ void concurrentBids_shouldMaintainAllInvariants() throws Exception {
 |---|---|
 | İki thread **aynı tutarla** teklif verir | Tam olarak biri kabul edilir (`BR-B-004`) |
 | Bitişe 5 sn kala teklif | `ends_at` = `şimdi + 120sn`, `extension_count`++ (`BR-A-006`) |
-| Peş peşe 25 uzatma denemesi | 20'de durur; `ends_at` orijinal bitiş + 60 dk'yı aşmaz |
+| Peş peşe 25 uzatma denemesi | 20'de durur (gerçek tavan ~40 dk); `ends_at` orijinal bitiş + 60 dk'yı **hiç yaklaşmadan** aşmaz |
 | Kapatma anında gelen teklif | Ya teklif kabul + uzatma, ya `409` — **ikisi birden asla** |
 | İki kopya kapatma işini birlikte çalıştırır | Her artırma tam **bir kez** kapanır (`SKIP LOCKED`) |
 | Satıcı kendi ilanına teklif verir | Reddedilir + `audit_logs` kaydı (`BR-B-002`) |
