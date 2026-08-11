@@ -10,9 +10,9 @@ import java.util.UUID;
 @Repository
 public interface BidRepository extends JpaRepository<Bid, UUID> {
     
-    // 1. Bir açık artırmaya verilmiş TÜM TEKLİFLERİ bul ve tarihe göre YENİDEN ESKİYE doğru sırala
-    List<Bid> findByAuctionIdOrderByCreatedAtDesc(UUID auctionId);
+    List<Bid> findByAuctionIdOrderByAmountDesc(UUID auctionId);
     
-    // 2. Bir kullanıcının (Ahmet'in) geçmişte verdiği tüm teklifleri bul
-    List<Bid> findByBidderId(UUID bidderId);
+    List<Bid> findByBidderIdOrderByCreatedAtDesc(UUID bidderId);
+    
+    long countByAuctionId(UUID auctionId);
 }

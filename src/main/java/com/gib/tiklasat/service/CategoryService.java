@@ -1,6 +1,6 @@
 package com.gib.tiklasat.service;
 
-import com.gib.tiklasat.dto.category.CategoryDto;
+import com.gib.tiklasat.dto.CategoryDto;
 import com.gib.tiklasat.entity.Category;
 import com.gib.tiklasat.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,52 +11,43 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Kategori işlemleri için servis sınıfı.
- */
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
-    /**
-     * Ana kategorileri getirir (parentId null olanlar).
-     * @return Ana kategori listesi
-     */
     @Transactional(readOnly = true)
     public List<CategoryDto> getRootCategories() {
-        return categoryRepository.findByParentIdIsNullAndIsActiveTrue()
-                .stream()
-                .map(this::mapToDto)
+        return categoryRepository.findByParentIsNull().stream()
+                .map(CategoryDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Belirtilen üst kategoriye ait alt kategorileri getirir.
-     * @param parentId Üst kategori ID'si
-     * @return Alt kategori listesi
-     */
     @Transactional(readOnly = true)
     public List<CategoryDto> getSubCategories(UUID parentId) {
-        return categoryRepository.findByParentIdAndIsActiveTrue(parentId)
-                .stream()
-                .map(this::mapToDto)
+        return categoryRepository.findByParentId(parentId).stream()
+                .map(CategoryDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Kategori entity'sini DTO'ya çevirir.
-     * @param category Kategori entity'si
-     * @return Kategori DTO'su
-     */
-    private CategoryDto mapToDto(Category category) {
-        return CategoryDto.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .slug(category.getSlug())
-                .icon(category.getIcon())
-                .isLeaf(category.getIsLeaf())
-                .build();
+    @Transactional
+    public CategoryDto createCategory(CategoryDto dto) {
+        Category category = new Category();
+        category.setName(dto.getName());
+        category.setSlug(dto.getSlug() != null ? dto.getSlug() : generateSlug(dto.getName()));
+        
+        if (dto.getParentId() != null) {
+            Category parent = categoryRepository.findById(dto.getParentId())
+                    .orElseThrow(() -> new RuntimeException("Parent category not found"));
+            category.setParent(parent);
+        }
+        
+        category = categoryRepository.save(category);
+        return CategoryDto.fromEntity(category);
+    }
+
+    private String generateSlug(String name) {
+        return name.toLowerCase().replaceAll("[^a-z0-9]+", "-");
     }
 }

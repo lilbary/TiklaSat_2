@@ -1,19 +1,14 @@
 package com.gib.tiklasat.controller;
 
-import com.gib.tiklasat.dto.listing.ListingCreateRequest;
-import com.gib.tiklasat.dto.listing.ListingDto;
+import com.gib.tiklasat.dto.ListingDto;
 import com.gib.tiklasat.service.ListingService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
+import java.util.List;
+import java.util.UUID;
 
-/**
- * İlan işlemleri için REST API uç noktaları.
- */
 @RestController
 @RequestMapping("/api/listings")
 @RequiredArgsConstructor
@@ -21,19 +16,18 @@ public class ListingController {
 
     private final ListingService listingService;
 
-    /**
-     * Yeni bir taslak ilan oluşturur.
-     * 
-     * @param request ilan oluşturma isteği
-     * @param principal oturum açmış kullanıcı bilgisi
-     * @return oluşturulan ilanın DTO gösterimi
-     */
-    @PostMapping({"/", ""})
-    public ResponseEntity<ListingDto> createDraftListing(
-            @Valid @RequestBody ListingCreateRequest request,
-            Principal principal) {
-        String sellerEmail = principal.getName();
-        ListingDto createdListing = listingService.createDraftListing(request, sellerEmail);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdListing);
+    @GetMapping
+    public ResponseEntity<List<ListingDto>> getAllListings() {
+        return ResponseEntity.ok(listingService.getAllListings());
+    }
+
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<ListingDto>> getListingsByCategory(@PathVariable UUID categoryId) {
+        return ResponseEntity.ok(listingService.getListingsByCategory(categoryId));
+    }
+
+    @PostMapping
+    public ResponseEntity<ListingDto> createListing(@RequestBody ListingDto listingDto) {
+        return ResponseEntity.ok(listingService.createListing(listingDto));
     }
 }
