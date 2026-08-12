@@ -27,15 +27,15 @@ public class Auction {
     private Listing listing;
 
     // Başlangıç Fiyatı (Kuruş/Küsürat hassasiyeti için BigDecimal kullanıyoruz)
-    @Column(name = "starting_price", nullable = false)
+    @Column(name = "start_price", nullable = false, precision = 15, scale = 2)
     private BigDecimal startingPrice;
 
-    // Açık Artırma Başlangıç Zamanı
-    @Column(name = "start_time", nullable = false)
+    // Açık Artırma Başlangıç Zamanı — DB kolonu "starts_at" (migration V4)
+    @Column(name = "starts_at", nullable = false)
     private Instant startTime;
 
-    // Açık Artırma Bitiş Zamanı
-    @Column(name = "end_time", nullable = false)
+    // Açık Artırma Bitiş Zamanı — DB kolonu "ends_at" (migration V4)
+    @Column(name = "ends_at", nullable = false)
     private Instant endTime;
 
     // Durumu: ACTIVE, ENDED, CANCELLED

@@ -27,7 +27,9 @@ public class User {
     private String fullName;
 
     // YENİ EKLENEN KISIMLAR
-    @Column(name = "password", nullable = false)
+    // DB kolonu "password_hash" (migration V1). NOT: şifre henüz hash'lenmiyor,
+    // düz metin yazılıyor — güvenlik konusuna geldiğimizde ele alacağız.
+    @Column(name = "password_hash", nullable = false)
     private String password;
 
     @Column(name = "phone", length = 20)

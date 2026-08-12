@@ -32,7 +32,9 @@ public class Bid {
     private User bidder;
 
     // Teklif Miktarı (Para olduğu için yine BigDecimal)
-    @Column(nullable = false)
+    // precision/scale EXPLICIT: migration'da NUMERIC(15,2) yazacağız,
+    // Hibernate'in varsayımıyla (NUMERIC(19,2)) çakışmasın.
+    @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
 
     // Teklifin verildiği an
