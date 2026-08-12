@@ -26,7 +26,3 @@ public class AuctionController {
         );
     }
 }
-
-
-
-public List<Employee> getEmployeeWithParams(@requestparam (name = "firstnaem") String firstname)
