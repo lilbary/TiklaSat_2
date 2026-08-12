@@ -58,4 +58,38 @@ public class AuctionService {
         // Kullanıcıya Süzgeçten (DTO) geçirerek geri döndür
         return AuctionDto.fromEntity(auction);
     }
+
+    // 3. AÇIK ARTIRMANIN BİTİŞ ZAMANI GELDİYSE DURUMUNU GÜNCELLE
+    @Transactional
+    public void closeExpiredAuctions() {
+        // Şu anki zamanı al
+        java.time.Instant now = java.time.Instant.now();
+        
+        // Veritabanından "Aktif" ama bitiş tarihi "Şu an"dan daha eski olanları bul (Süresi dolmuşlar)
+        java.util.List<com.gib.tiklasat.entity.Auction> expiredAuctions = auctionRepository.findByStatusAndEndTimeBefore("ACTIVE", now);
+        
+        for (com.gib.tiklasat.entity.Auction auction : expiredAuctions) {
+            auction.setStatus("ENDED"); // Durumunu "Bitti" olarak işaretle
+            auctionRepository.save(auction);
+            
+            System.out.println("ZAMAN DOLDU: Açık Artırma Kapatıldı -> ID: " + auction.getId());
+            // (İleride buraya Kazananı belirleme ve bildirim atma kodları eklenebilir)
+        }
+    }
+
+    // TÜM AÇIK ARTIRMALARI LİSTELE (Ana Sayfa İçin)
+    @Transactional(readOnly = true)
+    public java.util.List<AuctionDto> getAllAuctions() {
+        return auctionRepository.findAll().stream()
+                .map(AuctionDto::fromEntity)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    // TEK BİR AÇIK ARTIRMANIN DETAYINI GETİR
+    @Transactional(readOnly = true)
+    public AuctionDto getAuctionById(UUID id) {
+        Auction auction = auctionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Açık artırma bulunamadı!"));
+        return AuctionDto.fromEntity(auction);
+    }
 }

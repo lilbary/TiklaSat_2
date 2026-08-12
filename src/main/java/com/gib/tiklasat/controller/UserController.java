@@ -18,12 +18,6 @@ public class UserController {
 
     private final UserService userService;
 
-    // KULLANICI KAYIT OLMA (REGISTER) İSTEĞİNİ KARŞILAR
-    @PostMapping("/register")
-    public ResponseEntity<UserDto> registerUser(@RequestBody UserRegisterDto request) {
-        return ResponseEntity.ok(userService.register(request));
-    }
-
     // TARAYICIDAN KULLANICILARI GÖRMEK İÇİN (TEST AMAÇLI)
     @GetMapping
     public ResponseEntity<java.util.List<UserDto>> getAllUsers() {

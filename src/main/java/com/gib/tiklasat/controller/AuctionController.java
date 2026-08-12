@@ -25,4 +25,15 @@ public class AuctionController {
             auctionService.createAuction(request.getListingId(), request.getStartingPrice(), request.getEndTime())
         );
     }
+    // TÜM AÇIK ARTIRMALARI GETİR
+    @org.springframework.web.bind.annotation.GetMapping
+    public ResponseEntity<java.util.List<AuctionDto>> getAllAuctions() {
+        return ResponseEntity.ok(auctionService.getAllAuctions());
+    }
+
+    // TEK BİR AÇIK ARTIRMAYI GETİR
+    @org.springframework.web.bind.annotation.GetMapping("/{id}")
+    public ResponseEntity<AuctionDto> getAuctionById(@org.springframework.web.bind.annotation.PathVariable java.util.UUID id) {
+        return ResponseEntity.ok(auctionService.getAuctionById(id));
+    }
 }

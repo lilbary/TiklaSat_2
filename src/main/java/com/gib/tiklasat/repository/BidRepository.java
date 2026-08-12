@@ -11,6 +11,8 @@ import java.util.UUID;
 public interface BidRepository extends JpaRepository<Bid, UUID> {
     
     // 1. Bir açık artırmaya verilmiş TÜM TEKLİFLERİ bul ve tarihe göre YENİDEN ESKİYE doğru sırala
+    // PESSIMISTIC_WRITE: Aynı anda iki kişi teklif verirse, veritabanı kilitlenir ve sıraya konulurlar (Race condition çözümü).
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     List<Bid> findByAuctionIdOrderByCreatedAtDesc(UUID auctionId);
     
     // 2. Bir kullanıcının (Ahmet'in) geçmişte verdiği tüm teklifleri bul
