@@ -8,6 +8,7 @@ import com.gib.tiklasat.repository.AuctionRepository;
 import com.gib.tiklasat.repository.BidRepository;
 import com.gib.tiklasat.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,13 +24,14 @@ public class BidService {
     private final BidRepository bidRepository;
     private final AuctionRepository auctionRepository;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate; // WebSocket Habercisi
 
     // TEKLİF VERME (PLACE BID) METODU
     @Transactional
     public BidDto placeBid(UUID auctionId, UUID bidderId, BigDecimal amount) {
         
-        // 1. KURAL: Açık artırma veritabanında var mı?
-        Auction auction = auctionRepository.findById(auctionId)
+        // 1. KURAL: Açık artırmayı KİLİTLEYEREK (Pessimistic Lock) getir
+        Auction auction = auctionRepository.findByIdForUpdate(auctionId)
                 .orElseThrow(() -> new RuntimeException("Açık artırma bulunamadı!"));
 
         // 2. KURAL: Açık artırma hala "ACTIVE" mi ve süresi bitmemiş mi?
@@ -46,18 +48,22 @@ public class BidService {
             throw new RuntimeException("Kendi açık artırmanıza teklif veremezsiniz, kurnazlık yapmayın!");
         }
 
-        // 5. KURAL: Verilen teklif, başlangıç fiyatından düşük olamaz!
-        if (amount.compareTo(auction.getStartingPrice()) < 0) {
-            throw new RuntimeException("Teklifiniz başlangıç fiyatından düşük olamaz!");
+        // 5 ve 6. KURAL: Kademeli Artış (Bid Increments) Kontrolü
+        List<Bid> existingBids = bidRepository.findByAuctionIdOrderByCreatedAtDesc(auctionId);
+        
+        BigDecimal requiredMinimumBid;
+        if (existingBids.isEmpty()) {
+            // Açık artırmaya gelen İLK teklif ise, en az başlangıç fiyatı kadar olmalı
+            requiredMinimumBid = auction.getStartingPrice();
+        } else {
+            // Zaten teklif varsa, mevcut en yüksek teklifin üzerine kademeli minimum artış eklenmeli
+            BigDecimal currentHighest = existingBids.get(0).getAmount();
+            BigDecimal minIncrement = calculateMinIncrement(currentHighest);
+            requiredMinimumBid = currentHighest.add(minIncrement);
         }
 
-        // 6. KURAL: Daha önce verilmiş teklifler varsa, en yüksek tekliften daha yüksek olmalı!
-        List<Bid> existingBids = bidRepository.findByAuctionIdOrderByCreatedAtDesc(auctionId);
-        if (!existingBids.isEmpty()) {
-            BigDecimal highestBid = existingBids.get(0).getAmount();
-            if (amount.compareTo(highestBid) <= 0) {
-                throw new RuntimeException("Teklifiniz mevcut en yüksek tekliften (" + highestBid + ") daha yüksek olmalıdır!");
-            }
+        if (amount.compareTo(requiredMinimumBid) < 0) {
+            throw new RuntimeException("Teklifiniz çok düşük! Vermeniz gereken minimum tutar: " + requiredMinimumBid + " TL");
         }
 
         // TÜM KURALLARI GEÇTİYSE: Yeni teklifi oluştur ve kaydet
@@ -68,6 +74,23 @@ public class BidService {
 
         bid = bidRepository.save(bid);
 
-        return BidDto.fromEntity(bid);
+        // WebSocket: Bu ihaleyi izleyen "/topic/auctions/{id}" odasındaki HERKESE yeni teklifi anında yolla!
+        BidDto result = BidDto.fromEntity(bid);
+        messagingTemplate.convertAndSend("/topic/auctions/" + auctionId, result);
+
+        return result;
+    }
+
+    // YARDIMCI METOT: Kademeli Artış Tablosu
+    // Fiyat arttıkça, yapılması gereken minimum teklif artışı da büyür.
+    private BigDecimal calculateMinIncrement(BigDecimal currentPrice) {
+        if (currentPrice.compareTo(new BigDecimal("100")) < 0) return new BigDecimal("1");
+        if (currentPrice.compareTo(new BigDecimal("500")) < 0) return new BigDecimal("5");
+        if (currentPrice.compareTo(new BigDecimal("1000")) < 0) return new BigDecimal("10");
+        if (currentPrice.compareTo(new BigDecimal("5000")) < 0) return new BigDecimal("50");
+        if (currentPrice.compareTo(new BigDecimal("10000")) < 0) return new BigDecimal("100");
+        if (currentPrice.compareTo(new BigDecimal("50000")) < 0) return new BigDecimal("500");
+        if (currentPrice.compareTo(new BigDecimal("100000")) < 0) return new BigDecimal("1000");
+        return new BigDecimal("5000");
     }
 }

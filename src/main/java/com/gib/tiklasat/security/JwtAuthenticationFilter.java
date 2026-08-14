@@ -20,7 +20,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final CustomUserDetailsService userDetailsService;
+    // ARTIK VERİTABANINA İHTİYACIMIZ YOK, CustomUserDetailsService'i sildik!
 
     // GÜMRÜK KAPISI: Her internet isteği buradaki filtreden geçer.
     @Override
@@ -48,23 +48,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Eğer biletten Email çıktıysa ve sistemde o an kimse giriş yapmamış görünüyorsa:
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             
-            // Veritabanından bu Email'e sahip kullanıcıyı bul
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-
-            // Bilet sahte değilse ve süresi dolmadıysa:
-            if (jwtService.isTokenValid(jwt, userDetails)) {
+            // Bilet sahte değilse ve süresi dolmadıysa (DB'ye HİÇ SORMADAN!):
+            if (jwtService.isTokenValid(jwt)) {
                 
-                // Kapıdan geçiş iznini (Authentication) oluştur
+                // Biletten Rolleri (Örn: ROLE_USER) çek
+                java.util.List<String> roles = jwtService.extractRoles(jwt);
+                
+                // Spring'in anladığı Yetki listesine çevir
+                java.util.List<org.springframework.security.core.authority.SimpleGrantedAuthority> authorities = 
+                    roles != null ? roles.stream()
+                         .map(org.springframework.security.core.authority.SimpleGrantedAuthority::new)
+                         .collect(java.util.stream.Collectors.toList()) 
+                    : java.util.Collections.emptyList();
+
+                // Kapıdan geçiş iznini sadece E-posta ve Roller ile oluştur (UserDetails'e gerek kalmadı)
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
+                        userEmail,
                         null,
-                        userDetails.getAuthorities()
+                        authorities
                 );
                 authToken.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request)
                 );
                 
-                // Sisteme bu kişiyi "Giriş Yapmış (Onaylı)" olarak kaydet
+                // Sisteme bu kişiyi "Giriş Yapmış" olarak kaydet
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }

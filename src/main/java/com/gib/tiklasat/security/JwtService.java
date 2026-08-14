@@ -12,7 +12,10 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.function.Function;
+import org.springframework.security.core.GrantedAuthority;
 
 @Service
 public class JwtService {
@@ -30,9 +33,16 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-    // Kullanıcıya yeni bir bilet (Token) üretme
+    // Kullanıcıya yeni bir bilet (Token) üretme (Rollerini içine mühürleyerek)
     public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+        Map<String, Object> extraClaims = new HashMap<>();
+        // Kullanıcının rollerini (örn: ROLE_USER, ROLE_ADMIN) al ve listeye çevir
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+        extraClaims.put("roles", roles); // Biletin içine "roles" damgası vur
+        
+        return generateToken(extraClaims, userDetails);
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
@@ -45,7 +55,23 @@ public class JwtService {
                 .compact();
     }
 
+    // Biletin içinden Rolleri (Yetkileri) okuma
+    @SuppressWarnings("unchecked")
+    public List<String> extractRoles(String token) {
+        return extractClaim(token, claims -> claims.get("roles", List.class));
+    }
+
     // Biletin sahte olup olmadığını ve süresinin dolup dolmadığını kontrol etme
+    // (Artık veritabanındaki UserDetails'a ihtiyacımız yok!)
+    public boolean isTokenValid(String token) {
+        try {
+            return !isTokenExpired(token);
+        } catch (Exception e) {
+            return false; // Mühür sahteyse veya süre dolmuşsa Spring hata fırlatır, geçersiz sayarız.
+        }
+    }
+
+    // (Eski metod - Uyumluluk için bırakabiliriz ama biz üsttekini kullanacağız)
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
