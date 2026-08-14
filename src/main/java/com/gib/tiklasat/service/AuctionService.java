@@ -29,8 +29,7 @@ public class AuctionService {
                 .orElseThrow(() -> new RuntimeException("İlan bulunamadı!"));
 
         // KURAL 2: Bu ilanın zaten devam eden bir açık artırması var mı?
-        Auction existingAuction = auctionRepository.findByListingId(listingId);
-        if (existingAuction != null) {
+        if (auctionRepository.findByListingId(listingId).isPresent()) {
             throw new RuntimeException("Bu ilan için zaten bir açık artırma oluşturulmuş!");
         }
 

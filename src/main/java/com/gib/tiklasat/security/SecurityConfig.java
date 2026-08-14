@@ -55,7 +55,10 @@ public class SecurityConfig {
                 // 2. İLANLARA, KATEGORİLERE VE AÇIK ARTIRMALARA BAKMAK HERKESE AÇIK (Sadece GET istekleri)
                 .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/listings/**", "/api/auctions/**").permitAll()
                 
-                // 3. BUNLARIN DIŞINDAKİ HER ŞEY İÇİN KAPI KİLİTLİ (Giriş Yapmak Zorunlu)
+                // 3. ADMIN PANELİ SADECE "ADMIN" ROLÜNE SAHİP OLANLARA AÇIK
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                
+                // 4. BUNLARIN DIŞINDAKİ HER ŞEY İÇİN KAPI KİLİTLİ (Giriş Yapmak Zorunlu)
                 .anyRequest().authenticated()
             )
             // Sistemimizde oturum (Session) tutmayacağız, her istek kendi Biletini (Token) getirecek (STATELESS)
