@@ -2,6 +2,7 @@ package com.gib.tiklasat.service;
 
 import com.gib.tiklasat.dto.CategoryDto;
 import com.gib.tiklasat.entity.Category;
+import com.gib.tiklasat.exception.ResourceNotFoundException;
 import com.gib.tiklasat.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,7 +40,7 @@ public class CategoryService {
         
         if (dto.getParentId() != null) {
             Category parent = categoryRepository.findById(dto.getParentId())
-                    .orElseThrow(() -> new RuntimeException("Parent category not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Parent category not found"));
             category.setParent(parent);
         }
         

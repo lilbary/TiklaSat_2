@@ -6,6 +6,8 @@ import com.gib.tiklasat.dto.UserDto;
 import com.gib.tiklasat.dto.UserRegisterDto;
 import com.gib.tiklasat.entity.Role;
 import com.gib.tiklasat.entity.User;
+import com.gib.tiklasat.exception.ConflictException;
+import com.gib.tiklasat.exception.ResourceNotFoundException;
 import com.gib.tiklasat.repository.UserRepository;
 import com.gib.tiklasat.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +29,7 @@ public class AuthService {
     public AuthResponse register(UserRegisterDto request) {
         
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Bu e-posta adresi zaten kullanılıyor!");
+            throw new ConflictException("Bu e-posta adresi zaten kullanılıyor!");
         }
 
         User user = new User();
@@ -60,7 +62,7 @@ public class AuthService {
 
         // Şifre doğruysa kullanıcıyı veritabanından bul
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı"));
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı bulunamadı"));
 
         // Yeni bir bilet basıp geri döndür
         String jwtToken = jwtService.generateToken(user);

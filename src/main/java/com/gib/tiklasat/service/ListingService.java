@@ -4,6 +4,7 @@ import com.gib.tiklasat.dto.ListingDto;
 import com.gib.tiklasat.entity.Category;
 import com.gib.tiklasat.entity.Listing;
 import com.gib.tiklasat.entity.User;
+import com.gib.tiklasat.exception.ResourceNotFoundException;
 import com.gib.tiklasat.repository.CategoryRepository;
 import com.gib.tiklasat.repository.ListingRepository;
 import com.gib.tiklasat.repository.UserRepository;
@@ -44,12 +45,12 @@ public class ListingService {
         listing.setDescription(dto.getDescription());
         
         Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         listing.setCategory(category);
-        
+
         // Şimdilik satıcıyı dto'dan alıyoruz (Güvenlik olmadığı için)
         User seller = userRepository.findById(dto.getSellerId())
-                .orElseThrow(() -> new RuntimeException("Seller not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
         listing.setSeller(seller);
         
         listing = listingRepository.save(listing);

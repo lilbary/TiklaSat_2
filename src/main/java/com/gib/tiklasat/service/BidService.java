@@ -4,6 +4,9 @@ import com.gib.tiklasat.dto.BidDto;
 import com.gib.tiklasat.entity.Auction;
 import com.gib.tiklasat.entity.Bid;
 import com.gib.tiklasat.entity.User;
+import com.gib.tiklasat.exception.ConflictException;
+import com.gib.tiklasat.exception.ForbiddenActionException;
+import com.gib.tiklasat.exception.ResourceNotFoundException;
 import com.gib.tiklasat.repository.AuctionRepository;
 import com.gib.tiklasat.repository.BidRepository;
 import com.gib.tiklasat.repository.UserRepository;
@@ -32,7 +35,7 @@ public class BidService {
         
         // 1. KURAL: Açık artırmayı KİLİTLEYEREK (Pessimistic Lock) getir
         Auction auction = auctionRepository.findByIdForUpdate(auctionId)
-                .orElseThrow(() -> new RuntimeException("Açık artırma bulunamadı!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Açık artırma bulunamadı!"));
 
         // 2. KURAL: Açık artırma hala "ACTIVE" mi ve süresi bitmemiş mi?
         if (!auction.getStatus().equals("ACTIVE") || auction.getEndTime().isBefore(Instant.now())) {
@@ -41,11 +44,11 @@ public class BidService {
 
         // 3. KURAL: Teklif veren kullanıcı sistemde var mı?
         User bidder = userRepository.findById(bidderId)
-                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı bulunamadı!"));
 
         // 4. KURAL (Kritik): Kendi ilanıma teklif verebilir miyim? HAYIR!
         if (auction.getListing().getSeller().getId().equals(bidderId)) {
-            throw new RuntimeException("Kendi açık artırmanıza teklif veremezsiniz, kurnazlık yapmayın!");
+            throw new ForbiddenActionException("Kendi açık artırmanıza teklif veremezsiniz, kurnazlık yapmayın!");
         }
 
         // 5 ve 6. KURAL: Kademeli Artış (Bid Increments) Kontrolü
@@ -63,7 +66,7 @@ public class BidService {
         }
 
         if (amount.compareTo(requiredMinimumBid) < 0) {
-            throw new RuntimeException("Teklifiniz çok düşük! Vermeniz gereken minimum tutar: " + requiredMinimumBid + " TL");
+            throw new ConflictException("Teklifiniz çok düşük! Vermeniz gereken minimum tutar: " + requiredMinimumBid + " TL");
         }
 
         // TÜM KURALLARI GEÇTİYSE: Yeni teklifi oluştur ve kaydet

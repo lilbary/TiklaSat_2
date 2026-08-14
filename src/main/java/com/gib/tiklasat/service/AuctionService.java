@@ -3,6 +3,8 @@ package com.gib.tiklasat.service;
 import com.gib.tiklasat.dto.AuctionDto;
 import com.gib.tiklasat.entity.Auction;
 import com.gib.tiklasat.entity.Listing;
+import com.gib.tiklasat.exception.ConflictException;
+import com.gib.tiklasat.exception.ResourceNotFoundException;
 import com.gib.tiklasat.repository.AuctionRepository;
 import com.gib.tiklasat.repository.ListingRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,11 +28,11 @@ public class AuctionService {
         
         // KURAL 1: Böyle bir ilan gerçekten var mı? Yoksa hata ver.
         Listing listing = listingRepository.findById(listingId)
-                .orElseThrow(() -> new RuntimeException("İlan bulunamadı!"));
+                .orElseThrow(() -> new ResourceNotFoundException("İlan bulunamadı!"));
 
         // KURAL 2: Bu ilanın zaten devam eden bir açık artırması var mı?
         if (auctionRepository.findByListingId(listingId).isPresent()) {
-            throw new RuntimeException("Bu ilan için zaten bir açık artırma oluşturulmuş!");
+            throw new ConflictException("Bu ilan için zaten bir açık artırma oluşturulmuş!");
         }
 
         // KURAL 3: Başlangıç fiyatı 0'dan büyük olmalı
@@ -88,7 +90,7 @@ public class AuctionService {
     @Transactional(readOnly = true)
     public AuctionDto getAuctionById(UUID id) {
         Auction auction = auctionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Açık artırma bulunamadı!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Açık artırma bulunamadı!"));
         return AuctionDto.fromEntity(auction);
     }
 }
