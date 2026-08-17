@@ -72,8 +72,8 @@ public class AuctionService {
 
     // 3. AÇIK ARTIRMANIN BİTİŞ ZAMANI GELDİYSE DURUMUNU GÜNCELLE + KAZANANI BELİRLE
     @Transactional
-    @Scheduled(cron = "0 * * * * *") // Her dakikanın 0. saniyesinde çalışır
-    @net.javacrumbs.shedlock.spring.annotation.SchedulerLock(name = "closeExpiredAuctionsTask", lockAtLeastFor = "PT30S", lockAtMostFor = "PT50S")
+    @Scheduled(fixedRate = 10000) // Her 10 saniyede bir çalışır
+    @net.javacrumbs.shedlock.spring.annotation.SchedulerLock(name = "closeExpiredAuctionsTask", lockAtLeastFor = "PT2S", lockAtMostFor = "PT9S")
     @CacheEvict(value = {"auctions_all", "auction_by_id"}, allEntries = true)
     public void closeExpiredAuctions() {
         // Şu anki zamanı al
