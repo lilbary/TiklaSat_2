@@ -9,6 +9,8 @@ import com.gib.tiklasat.repository.CategoryRepository;
 import com.gib.tiklasat.repository.ListingRepository;
 import com.gib.tiklasat.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,7 @@ public class ListingService {
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "listings")
     public List<ListingDto> getAllListings() {
         return listingRepository.findAll().stream()
                 .map(ListingDto::fromEntity)
@@ -32,6 +35,7 @@ public class ListingService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "listings_by_category", key = "#categoryId")
     public List<ListingDto> getListingsByCategory(UUID categoryId) {
         return listingRepository.findByCategoryId(categoryId).stream()
                 .map(ListingDto::fromEntity)
@@ -39,6 +43,7 @@ public class ListingService {
     }
 
     @Transactional
+    @CacheEvict(value = {"listings", "listings_by_category"}, allEntries = true)
     public ListingDto createListing(ListingDto dto) {
         Listing listing = new Listing();
         listing.setTitle(dto.getTitle());

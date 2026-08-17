@@ -21,6 +21,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final CustomUserDetailsService userDetailsService;
+    private final RateLimitFilter rateLimitFilter;
 
     // Şifreleri (Kriptolayarak) veritabanına kaydetmek için kullanacağımız şifreleyici
     @Bean
@@ -67,8 +68,11 @@ public class SecurityConfig {
             // Kimlik doğrulayıcıyı sisteme tanıtıyoruz
             .authenticationProvider(authenticationProvider())
             
-            // Kendi yazdığımız "Gümrük Kapısı" filtresini, Spring'in standart şifre sorma filtresinin EN BAŞINA koyuyoruz
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            // 1. Önce Hız Sınırı (Rate Limit) kalkanından geç
+            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+            
+            // 2. Hız sınırını geçtiyse Jwt Kimlik kontrolünden geç
+            .addFilterAfter(jwtAuthFilter, org.springframework.web.filter.OncePerRequestFilter.class);
 
         return http.build();
     }

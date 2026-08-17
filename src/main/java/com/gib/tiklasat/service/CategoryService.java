@@ -5,6 +5,8 @@ import com.gib.tiklasat.entity.Category;
 import com.gib.tiklasat.exception.ResourceNotFoundException;
 import com.gib.tiklasat.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,7 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "categories")
     public List<CategoryDto> getRootCategories() {
         return categoryRepository.findByParentIsNull().stream()
                 .map(CategoryDto::fromEntity)
@@ -33,6 +36,7 @@ public class CategoryService {
     }
 
     @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     public CategoryDto createCategory(CategoryDto dto) {
         Category category = new Category();
         category.setName(dto.getName());

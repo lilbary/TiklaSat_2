@@ -42,6 +42,11 @@ public class Auction {
     @Column(length = 20, nullable = false)
     private String status = "ACTIVE";
 
+    // Kazanan: İhale kapandığında en yüksek teklifi veren kullanıcı
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "winner_id")
+    private User winner;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
