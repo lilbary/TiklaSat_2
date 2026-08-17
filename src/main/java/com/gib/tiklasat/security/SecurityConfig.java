@@ -72,7 +72,7 @@ public class SecurityConfig {
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             
             // 2. Hız sınırını geçtiyse Jwt Kimlik kontrolünden geç
-            .addFilterAfter(jwtAuthFilter, org.springframework.web.filter.OncePerRequestFilter.class);
+            .addFilterAfter(jwtAuthFilter, RateLimitFilter.class);
 
         return http.build();
     }

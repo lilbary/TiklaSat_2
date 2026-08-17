@@ -1,5 +1,5 @@
 -- =====================================================================
--- TıklaSat · V3 · Kazanan Kolonu
+-- TıklaSat · V4 · Kazanan Kolonu
 -- ---------------------------------------------------------------------
 -- Açık artırmayı kazanan kullanıcıyı tutacak kolon.
 -- İhale kapandığında en yüksek teklifi veren kişi buraya yazılır.

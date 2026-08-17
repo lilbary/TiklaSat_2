@@ -1,5 +1,5 @@
 -- =====================================================================
--- TıklaSat · V2 · ShedLock Kilit Tablosu
+-- TıklaSat · V3 · ShedLock Kilit Tablosu
 -- ---------------------------------------------------------------------
 -- ShedLock kütüphanesi bu tabloyu kullanarak zamanlanmış görevlerin
 -- (scheduled jobs) aynı anda sadece bir sunucu tarafından
