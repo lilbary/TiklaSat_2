@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 function Section({ title, children }) {
   return (
@@ -28,7 +29,7 @@ function AuctionCard({ auction }) {
   })
 
   return (
-    <div className="w-56 shrink-0">
+    <Link to={`/artirma/${auction.id}`} className="block w-56 shrink-0">
       <Placeholder
         letter={auction.listingTitle.charAt(0)}
         from="from-blue-100"
@@ -36,52 +37,40 @@ function AuctionCard({ auction }) {
         text="text-blue-300"
       />
       <p className="line-clamp-2 text-sm font-semibold text-slate-900">{auction.listingTitle}</p>
-      <p className="mt-1 text-sm text-slate-600">{auction.startingPrice.toLocaleString('tr-TR')} TL</p>
+      <p className="mt-1 text-sm text-slate-600">{auction.currentPrice.toLocaleString('tr-TR')} TL</p>
       <p className="text-xs text-slate-400">Bitiş: {endLabel}</p>
-    </div>
-  )
-}
-
-function ListingCard({ listing }) {
-  return (
-    <div className="w-56 shrink-0">
-      <Placeholder
-        letter={listing.title.charAt(0)}
-        from="from-slate-200"
-        to="to-slate-100"
-        text="text-slate-400"
-      />
-      <p className="line-clamp-2 text-sm font-semibold text-slate-900">{listing.title}</p>
-      <p className="mt-1 text-xs text-slate-500">{listing.categoryName}</p>
-    </div>
+    </Link>
   )
 }
 
 function HomePage() {
   const [auctions, setAuctions] = useState([])
-  const [listings, setListings] = useState([])
 
   useEffect(() => {
     fetch('/api/auctions')
       .then((res) => res.json())
       .then(setAuctions)
-
-    fetch('/api/listings')
-      .then((res) => res.json())
-      .then(setListings)
   }, [])
 
   const now = Date.now()
   const in24h = now + 24 * 60 * 60 * 1000
   const in7days = now + 7 * 24 * 60 * 60 * 1000
 
-  const endingToday = auctions.filter((a) => new Date(a.endTime).getTime() <= in24h)
-  const endingThisWeek = auctions.filter((a) => {
+  // Sadece hâlâ ACTIVE olan VE bitiş zamanı henüz gelmemiş artırmalar —
+  // süresi dolmuş (ENDED) olanlar hiçbir bölümde görünmemeli.
+  // Kullanıcıya sadece gerçekten teklif verilebilen açık artırmalar gösterilir;
+  // henüz artırmaya çıkarılmamış ham "ilan" kayıtları arka planda kalır.
+  const activeAuctions = auctions.filter(
+    (a) => a.status === 'ACTIVE' && new Date(a.endTime).getTime() > now
+  )
+
+  const endingToday = activeAuctions.filter((a) => new Date(a.endTime).getTime() <= in24h)
+  const endingThisWeek = activeAuctions.filter((a) => {
     const t = new Date(a.endTime).getTime()
     return t > in24h && t <= in7days
   })
-  const newestListings = [...listings].sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+  const newestAuctions = [...activeAuctions].sort(
+    (a, b) => new Date(b.startTime) - new Date(a.startTime)
   )
 
   return (
@@ -102,18 +91,18 @@ function HomePage() {
         </Section>
       )}
 
-      {newestListings.length > 0 && (
+      {newestAuctions.length > 0 && (
         <Section title="Yeni Eklenenler">
-          {newestListings.map((l) => (
-            <ListingCard key={l.id} listing={l} />
+          {newestAuctions.map((a) => (
+            <AuctionCard key={a.id} auction={a} />
           ))}
         </Section>
       )}
 
-      {listings.length > 0 && (
-        <Section title="Tüm İlanlar">
-          {listings.map((l) => (
-            <ListingCard key={l.id} listing={l} />
+      {activeAuctions.length > 0 && (
+        <Section title="Tüm Açık Artırmalar">
+          {activeAuctions.map((a) => (
+            <AuctionCard key={a.id} auction={a} />
           ))}
         </Section>
       )}

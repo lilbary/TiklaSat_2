@@ -12,17 +12,19 @@ public class AuctionDto {
     private UUID id;
     private UUID listingId;
     private String listingTitle; // Ön yüzde kolaylık olsun diye ilanın başlığını da veriyoruz
-    private BigDecimal startingPrice;
+    private BigDecimal startingPrice; // SABİT — asla değişmez
+    private BigDecimal currentPrice;  // DEĞİŞKEN — en yüksek teklif (yoksa startingPrice)
     private Instant startTime;
     private Instant endTime;
     private String status;
 
-    public static AuctionDto fromEntity(Auction auction) {
+    public static AuctionDto fromEntity(Auction auction, BigDecimal currentPrice) {
         AuctionDto dto = new AuctionDto();
         dto.setId(auction.getId());
         dto.setListingId(auction.getListing().getId());
         dto.setListingTitle(auction.getListing().getTitle());
         dto.setStartingPrice(auction.getStartingPrice());
+        dto.setCurrentPrice(currentPrice);
         dto.setStartTime(auction.getStartTime());
         dto.setEndTime(auction.getEndTime());
         dto.setStatus(auction.getStatus());

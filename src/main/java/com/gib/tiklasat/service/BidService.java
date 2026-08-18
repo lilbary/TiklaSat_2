@@ -34,8 +34,8 @@ public class BidService {
 
     // TEKLİF VERME (PLACE BID) METODU
     @Transactional
-    public BidDto placeBid(UUID auctionId, UUID bidderId, BigDecimal amount) {
-        
+    public BidDto placeBid(UUID auctionId, String bidderEmail, BigDecimal amount) {
+
         // 1. KURAL: Açık artırmayı KİLİTLEYEREK (Pessimistic Lock) getir
         Auction auction = auctionRepository.findByIdForUpdate(auctionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Açık artırma bulunamadı!"));
@@ -45,12 +45,12 @@ public class BidService {
             throw new RuntimeException("Bu açık artırma bitmiş veya iptal edilmiş, teklif veremezsiniz!");
         }
 
-        // 3. KURAL: Teklif veren kullanıcı sistemde var mı?
-        User bidder = userRepository.findById(bidderId)
+        // 3. KURAL: Teklif veren kullanıcı sistemde var mı? (JWT'deki email'den bulunuyor)
+        User bidder = userRepository.findByEmail(bidderEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı bulunamadı!"));
 
         // 4. KURAL (Kritik): Kendi ilanıma teklif verebilir miyim? HAYIR!
-        if (auction.getListing().getSeller().getId().equals(bidderId)) {
+        if (auction.getListing().getSeller().getId().equals(bidder.getId())) {
             throw new ForbiddenActionException("Kendi açık artırmanıza teklif veremezsiniz, kurnazlık yapmayın!");
         }
 
@@ -90,7 +90,7 @@ public class BidService {
             // Kuryenin (Publisher Job) mesajı nereye ve ne olarak ileteceğini JSON'a yazıyoruz
             String jsonPayload = objectMapper.writeValueAsString(
                 java.util.Map.of(
-                    "destination", "/topic/auctions/" + auctionId,
+                    "destination", "/topic/auctions." + auctionId,
                     "payload", result
                 )
             );

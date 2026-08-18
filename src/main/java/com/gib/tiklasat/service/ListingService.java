@@ -48,7 +48,7 @@ public class ListingService {
         Listing listing = new Listing();
         listing.setTitle(dto.getTitle());
         listing.setDescription(dto.getDescription());
-        
+
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         listing.setCategory(category);
@@ -57,7 +57,7 @@ public class ListingService {
         User seller = userRepository.findById(dto.getSellerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
         listing.setSeller(seller);
-        
+
         listing = listingRepository.save(listing);
         return ListingDto.fromEntity(listing);
     }

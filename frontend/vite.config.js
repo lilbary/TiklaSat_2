@@ -13,4 +13,9 @@ export default defineConfig({
       },
     },
   },
+  // sockjs-client, tarayıcıda olmayan Node.js'e özgü "global" nesnesini
+  // kullanıyor — burada "global" gördüğün yerde "globalThis" kullan diyoruz.
+  define: {
+    global: 'globalThis',
+  },
 })

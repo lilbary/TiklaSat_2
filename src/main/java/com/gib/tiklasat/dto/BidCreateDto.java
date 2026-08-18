@@ -8,6 +8,7 @@ import java.util.UUID;
 @Data
 public class BidCreateDto {
     private UUID auctionId;
-    private UUID bidderId; // (İleride güvenlik eklendiğinde bu parametreyi Token'dan çekeceğiz)
     private BigDecimal amount;
+    // bidderId ARTIK YOK — kimin teklif verdiği JWT'den (Authentication) çıkarılıyor.
+    // İstemcinin "ben X kullanıcısıyım" diye başkası adına teklif vermesi artık mümkün değil.
 }

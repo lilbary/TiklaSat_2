@@ -55,7 +55,11 @@ public class SecurityConfig {
                 
                 // 2. İLANLARA, KATEGORİLERE VE AÇIK ARTIRMALARA BAKMAK HERKESE AÇIK (Sadece GET istekleri)
                 .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/listings/**", "/api/auctions/**").permitAll()
-                
+
+                // 2.5. WEBSOCKET BAĞLANTISI (SADECE DİNLEME) HERKESE AÇIK — teklif vermek
+                // hâlâ ayrı, korumalı bir uçtan (POST /api/bids, JWT ister) yapılıyor.
+                .requestMatchers("/ws-auction/**").permitAll()
+
                 // 3. ADMIN PANELİ SADECE "ADMIN" ROLÜNE SAHİP OLANLARA AÇIK
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 
