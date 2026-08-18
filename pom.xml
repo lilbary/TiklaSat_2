@@ -84,6 +84,18 @@
 			<artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
 
+		<!-- RabbitMQ (AMQP) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-amqp</artifactId>
+		</dependency>
+
+		<!-- STOMP Broker Relay için Netty (RabbitMQ WebSocket eklentisi için gerekli) -->
+		<dependency>
+			<groupId>io.projectreactor.netty</groupId>
+			<artifactId>reactor-netty</artifactId>
+		</dependency>
+
 		<!-- ShedLock: Zamanlanmış görevler için dağıtık kilit -->
 		<dependency>
 			<groupId>net.javacrumbs.shedlock</groupId>

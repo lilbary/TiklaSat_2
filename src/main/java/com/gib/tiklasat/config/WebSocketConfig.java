@@ -22,7 +22,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         // Sunucunun kullanıcılara (istemcilere) mesaj iteceği (push) kanalın ön eki: "/topic"
         // Örn: /topic/auctions/123-abc odasındakilere mesaj gidecek.
-        registry.enableSimpleBroker("/topic");
+        // Artık In-Memory Simple Broker yerine RabbitMQ (STOMP Relay) kullanıyoruz:
+        registry.enableStompBrokerRelay("/topic")
+                .setRelayHost("localhost")
+                .setRelayPort(61613) // RabbitMQ STOMP plugin portu
+                .setClientLogin("guest")
+                .setClientPasscode("guest");
 
         // Kullanıcıların sunucuya (Backend'e) mesaj atacağı kapının ön eki: "/app"
         registry.setApplicationDestinationPrefixes("/app");

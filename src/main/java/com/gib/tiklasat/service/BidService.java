@@ -11,7 +11,9 @@ import com.gib.tiklasat.repository.AuctionRepository;
 import com.gib.tiklasat.repository.BidRepository;
 import com.gib.tiklasat.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gib.tiklasat.entity.OutboxEvent;
+import com.gib.tiklasat.repository.OutboxEventRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +29,8 @@ public class BidService {
     private final BidRepository bidRepository;
     private final AuctionRepository auctionRepository;
     private final UserRepository userRepository;
-    private final SimpMessagingTemplate messagingTemplate; // WebSocket Habercisi
+    private final OutboxEventRepository outboxEventRepository; // Outbox Tablosu
+    private final ObjectMapper objectMapper; // JSON Çevirici
 
     // TEKLİF VERME (PLACE BID) METODU
     @Transactional
@@ -77,9 +80,25 @@ public class BidService {
 
         bid = bidRepository.save(bid);
 
-        // WebSocket: Bu ihaleyi izleyen "/topic/auctions/{id}" odasındaki HERKESE yeni teklifi anında yolla!
+        // Outbox Pattern: WebSocket'e hemen haber verme, Outbox (Giden Kutusu) tablosuna not bırak.
         BidDto result = BidDto.fromEntity(bid);
-        messagingTemplate.convertAndSend("/topic/auctions/" + auctionId, result);
+        
+        try {
+            OutboxEvent event = new OutboxEvent();
+            event.setEventType("BID_PLACED");
+            
+            // Kuryenin (Publisher Job) mesajı nereye ve ne olarak ileteceğini JSON'a yazıyoruz
+            String jsonPayload = objectMapper.writeValueAsString(
+                java.util.Map.of(
+                    "destination", "/topic/auctions/" + auctionId,
+                    "payload", result
+                )
+            );
+            event.setPayload(jsonPayload);
+            outboxEventRepository.save(event);
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            throw new RuntimeException("Outbox mesajı oluşturulamadı", e);
+        }
 
         return result;
     }
