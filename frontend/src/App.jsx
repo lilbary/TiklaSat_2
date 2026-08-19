@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import AuctionDetailPage from './pages/AuctionDetailPage'
+import CreateAuctionPage from './pages/CreateAuctionPage'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/giris" element={<LoginPage />} />
         <Route path="/kayit" element={<RegisterPage />} />
         <Route path="/artirma/:id" element={<AuctionDetailPage />} />
+        <Route path="/artirma-olustur" element={<CreateAuctionPage />} />
       </Routes>
     </div>
   )

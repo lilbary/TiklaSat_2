@@ -6,10 +6,15 @@ import com.gib.tiklasat.service.BidService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/bids")
@@ -28,5 +33,11 @@ public class BidController {
         return ResponseEntity.ok(
             bidService.placeBid(request.getAuctionId(), bidderEmail, request.getAmount())
         );
+    }
+
+    // BİR AÇIK ARTIRMANIN TEKLİF GEÇMİŞİNİ GETİR
+    @GetMapping("/auction/{auctionId}")
+    public ResponseEntity<List<BidDto>> getBidHistory(@PathVariable UUID auctionId) {
+        return ResponseEntity.ok(bidService.getBidHistory(auctionId));
     }
 }

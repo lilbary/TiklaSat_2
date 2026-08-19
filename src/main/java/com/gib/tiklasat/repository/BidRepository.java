@@ -16,6 +16,11 @@ public interface BidRepository extends JpaRepository<Bid, UUID> {
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     List<Bid> findByAuctionIdOrderByCreatedAtDesc(UUID auctionId);
     
+    // 1b. Aynı sorgu ama KİLİTSİZ — teklif geçmişini sayfada göstermek için.
+    // (findByAuctionIdOrderByCreatedAtDesc kilitli olduğu için sadece placeBid() transaction'ı
+    // içinde kullanılmalı, sayfa görüntüleme gibi salt okuma işlerinde bu metot kullanılır.)
+    List<Bid> findAllByAuctionIdOrderByCreatedAtDesc(UUID auctionId);
+
     // 2. Bir kullanıcının (Ahmet'in) geçmişte verdiği tüm teklifleri bul
     List<Bid> findByBidderId(UUID bidderId);
 

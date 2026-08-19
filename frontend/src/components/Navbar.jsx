@@ -27,6 +27,9 @@ function Navbar() {
       {user ? (
         <div className="flex items-center gap-4">
           <span className="text-sm font-medium text-slate-700">{user.sub}</span>
+          <Link to="/artirma-olustur" className="text-sm font-medium text-slate-700 hover:text-blue-600">
+            Artırma Oluştur
+          </Link>
           <button
             onClick={handleLogout}
             className="text-sm font-medium text-slate-700 hover:text-blue-600"

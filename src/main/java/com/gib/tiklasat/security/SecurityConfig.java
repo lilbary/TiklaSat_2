@@ -53,8 +53,9 @@ public class SecurityConfig {
                 // 1. GİRİŞ VE KAYIT SAYFASI HERKESE AÇIK OLMALI
                 .requestMatchers("/api/auth/**").permitAll()
                 
-                // 2. İLANLARA, KATEGORİLERE VE AÇIK ARTIRMALARA BAKMAK HERKESE AÇIK (Sadece GET istekleri)
-                .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/listings/**", "/api/auctions/**").permitAll()
+                // 2. İLANLARA, KATEGORİLERE, AÇIK ARTIRMALARA VE TEKLİF GEÇMİŞİNE BAKMAK
+                // HERKESE AÇIK (Sadece GET istekleri) — teklif VERMEK (POST) hâlâ korumalı.
+                .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/listings/**", "/api/auctions/**", "/api/bids/**").permitAll()
 
                 // 2.5. WEBSOCKET BAĞLANTISI (SADECE DİNLEME) HERKESE AÇIK — teklif vermek
                 // hâlâ ayrı, korumalı bir uçtan (POST /api/bids, JWT ister) yapılıyor.

@@ -78,7 +78,11 @@ public class BidService {
         bid.setBidder(bidder);
         bid.setAmount(amount);
 
-        bid = bidRepository.save(bid);
+        // saveAndFlush KASITLI: save() tek başına INSERT'i hemen çalıştırmaz (flush transaction
+        // sonunda olur), bu yüzden @CreationTimestamp ile üretilen createdAt bu noktada henüz
+        // Java nesnesine yansımamış olurdu (null kalırdı) — aşağıda DTO'ya koyup WebSocket'e
+        // yollayacağımız için hemen flush ederek gerçek değeri garantiliyoruz.
+        bid = bidRepository.saveAndFlush(bid);
 
         // Outbox Pattern: WebSocket'e hemen haber verme, Outbox (Giden Kutusu) tablosuna not bırak.
         BidDto result = BidDto.fromEntity(bid);
@@ -101,6 +105,14 @@ public class BidService {
         }
 
         return result;
+    }
+
+    // BİR AÇIK ARTIRMANIN TEKLİF GEÇMİŞİNİ GETİR (Yeniden eskiye doğru)
+    @Transactional(readOnly = true)
+    public List<BidDto> getBidHistory(UUID auctionId) {
+        return bidRepository.findAllByAuctionIdOrderByCreatedAtDesc(auctionId).stream()
+                .map(BidDto::fromEntity)
+                .toList();
     }
 
     // YARDIMCI METOT: Kademeli Artış Tablosu

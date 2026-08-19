@@ -4,6 +4,7 @@ import com.gib.tiklasat.dto.AuctionDto;
 import com.gib.tiklasat.entity.Auction;
 import com.gib.tiklasat.entity.Listing;
 import com.gib.tiklasat.exception.ConflictException;
+import com.gib.tiklasat.exception.ForbiddenActionException;
 import com.gib.tiklasat.exception.ResourceNotFoundException;
 import com.gib.tiklasat.repository.AuctionRepository;
 import com.gib.tiklasat.repository.BidRepository;
@@ -15,6 +16,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -34,12 +36,15 @@ public class AuctionService {
     // YENİ BİR AÇIK ARTIRMA BAŞLATMA METODU
     @Transactional
     @CacheEvict(value = {"auctions_all", "auction_by_id"}, allEntries = true)
-    public AuctionDto createAuction(UUID listingId, BigDecimal startingPrice, Instant endTime) {
-        
-        // KURAL 1: Böyle bir ilan gerçekten var mı? Yoksa hata ver.
-        Listing listing = listingRepository.findById(listingId)
-                .orElseThrow(() -> new ResourceNotFoundException("İlan bulunamadı!"));
+    public AuctionDto createAuction(UUID listingId, BigDecimal startingPrice, Instant endTime, String sellerEmail) {
 
+        Listing listing = listingRepository.findById(listingId)
+            .orElseThrow(() -> new ResourceNotFoundException("İlan bulunamadı!"));
+
+        // YENİ KURAL: Bu ilan gerçekten bu isteği atan kişiye mi ait?
+        if (!listing.getSeller().getEmail().equals(sellerEmail)) {
+            throw new ForbiddenActionException("Bu ilan size ait değil, artırmaya çıkaramazsınız!");
+        }
         // KURAL 2: Bu ilanın zaten devam eden bir açık artırması var mı?
         if (auctionRepository.findByListingId(listingId).isPresent()) {
             throw new ConflictException("Bu ilan için zaten bir açık artırma oluşturulmuş!");

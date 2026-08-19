@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/auctions")
@@ -19,10 +20,10 @@ public class AuctionController {
 
     // YENİ AÇIK ARTIRMA BAŞLATMA
     @PostMapping
-    public ResponseEntity<AuctionDto> createAuction(@RequestBody AuctionCreateDto request) {
-        // Müşteriden siparişi (request) alıp, doğrudan Aşçıya (Service) teslim ediyoruz.
+    public ResponseEntity<AuctionDto> createAuction(@RequestBody AuctionCreateDto request, Authentication authentication) {
+        String sellerEmail = (String) authentication.getPrincipal();
         return ResponseEntity.ok(
-            auctionService.createAuction(request.getListingId(), request.getStartingPrice(), request.getEndTime())
+            auctionService.createAuction(request.getListingId(), request.getStartingPrice(), request.getEndTime(), sellerEmail)
         );
     }
     // TÜM AÇIK ARTIRMALARI GETİR
