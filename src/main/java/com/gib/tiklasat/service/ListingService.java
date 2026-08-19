@@ -44,7 +44,7 @@ public class ListingService {
 
     @Transactional
     @CacheEvict(value = {"listings", "listings_by_category"}, allEntries = true)
-    public ListingDto createListing(ListingDto dto) {
+    public ListingDto createListing(ListingDto dto, String sellerEmail) {
         Listing listing = new Listing();
         listing.setTitle(dto.getTitle());
         listing.setDescription(dto.getDescription());
@@ -54,7 +54,7 @@ public class ListingService {
         listing.setCategory(category);
 
         // Şimdilik satıcıyı dto'dan alıyoruz (Güvenlik olmadığı için)
-        User seller = userRepository.findById(dto.getSellerId())
+        User seller = userRepository.findByEmail(sellerEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
         listing.setSeller(seller);
 

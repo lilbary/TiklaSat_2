@@ -5,6 +5,7 @@ import com.gib.tiklasat.service.ListingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,7 +28,11 @@ public class ListingController {
     }
 
     @PostMapping
-    public ResponseEntity<ListingDto> createListing(@RequestBody ListingDto listingDto) {
-        return ResponseEntity.ok(listingService.createListing(listingDto));
+    public ResponseEntity<ListingDto> createListing(@RequestBody ListingDto listingDto, Authentication authentication) {
+        // JWT içindeki kullanıcı email'ini alıyoruz
+        String sellerEmail = (String) authentication.getPrincipal();
+
+        // Service metoduna artık bu email'i de göndereceğiz
+        return ResponseEntity.ok(listingService.createListing(listingDto, sellerEmail));
     }
 }
