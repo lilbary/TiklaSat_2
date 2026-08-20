@@ -30,8 +30,10 @@ public class ListingService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
 
+    // NOT: Burası @Cacheable OLAMAZ — Page (PageImpl) Redis'e yazılabiliyor ama
+    // geri okunurken Jackson'ın kurabileceği bir constructor'ı olmadığı için
+    // ikinci istekte "Cannot construct instance of PageImpl" hatasıyla patlıyor.
     @Transactional(readOnly = true)
-    @Cacheable(value = "listings", key = "#page + '-' + #size") // cachein her sayfa icin ayrı tutulmasını saglarmis
     public Page<ListingDto> getAllListings(int page, int size){
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Listing> listingPage = listingRepository.findAll(pageable);
@@ -47,7 +49,7 @@ public class ListingService {
     }
 
     @Transactional
-    @CacheEvict(value = {"listings", "listings_by_category"}, allEntries = true)
+    @CacheEvict(value = "listings_by_category", allEntries = true)
     public ListingDto createListing(ListingDto dto, String sellerEmail) {
         Listing listing = new Listing();
         listing.setTitle(dto.getTitle());
