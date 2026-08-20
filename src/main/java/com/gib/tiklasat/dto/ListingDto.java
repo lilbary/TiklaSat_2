@@ -2,6 +2,7 @@ package com.gib.tiklasat.dto;
 
 import com.gib.tiklasat.entity.Listing;
 import lombok.Data;
+import java.math.BigDecimal;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -17,6 +18,7 @@ public class ListingDto {
     private String status;
     private Integer viewCount;
     private Instant createdAt;
+    private BigDecimal price;
 
     public static ListingDto fromEntity(Listing listing) {
         ListingDto dto = new ListingDto();
@@ -28,6 +30,7 @@ public class ListingDto {
         dto.setDescription(listing.getDescription());
         dto.setStatus(listing.getStatus());
         dto.setViewCount(listing.getViewCount());
+        dto.setPrice(listing.getPrice());
         dto.setCreatedAt(listing.getCreatedAt());
         return dto;
     }

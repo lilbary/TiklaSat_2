@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -47,24 +48,25 @@ public class ListingService {
                 .map(ListingDto::fromEntity)
                 .collect(Collectors.toList());
     }
-
     @Transactional
     @CacheEvict(value = "listings_by_category", allEntries = true)
     public ListingDto createListing(ListingDto dto, String sellerEmail) {
+        // 1. Senin yazdığın Fiyat Kontrolü
+        if (dto.getPrice() == null || dto.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Fiyat sıfır veya negatif olamaz!");
+        }
         Listing listing = new Listing();
         listing.setTitle(dto.getTitle());
         listing.setDescription(dto.getDescription());
-
+        listing.setPrice(dto.getPrice()); // <-- Senin eklediğin kısım
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         listing.setCategory(category);
-
-        // Şimdilik satıcıyı dto'dan alıyoruz (Güvenlik olmadığı için)
         User seller = userRepository.findByEmail(sellerEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
         listing.setSeller(seller);
-
         listing = listingRepository.save(listing);
         return ListingDto.fromEntity(listing);
     }
+
 }
