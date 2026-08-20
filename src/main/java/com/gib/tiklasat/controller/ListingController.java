@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,8 +19,11 @@ public class ListingController {
     private final ListingService listingService;
 
     @GetMapping
-    public ResponseEntity<List<ListingDto>> getAllListings() {
-        return ResponseEntity.ok(listingService.getAllListings());
+    public ResponseEntity<Page<ListingDto>> getAllListings(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return ResponseEntity.ok(listingService.getAllListings(page, size));
     }
 
     @GetMapping("/category/{categoryId}")

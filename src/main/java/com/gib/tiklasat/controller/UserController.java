@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/users")
@@ -18,9 +19,9 @@ public class UserController {
 
     private final UserService userService;
 
-    // TARAYICIDAN KULLANICILARI GÖRMEK İÇİN (TEST AMAÇLI)
-    @GetMapping
-    public ResponseEntity<java.util.List<UserDto>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    @GetMapping("/me")
+    public ResponseEntity<UserDto> getMyProfile(Authentication authentication) {
+        String currentUserEmail = (String) authentication.getPrincipal();
+        return ResponseEntity.ok(userService.getUserProfile(currentUserEmail));
     }
 }

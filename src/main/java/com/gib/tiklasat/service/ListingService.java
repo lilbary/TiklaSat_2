@@ -13,6 +13,10 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,11 +31,11 @@ public class ListingService {
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "listings")
-    public List<ListingDto> getAllListings() {
-        return listingRepository.findAll().stream()
-                .map(ListingDto::fromEntity)
-                .collect(Collectors.toList());
+    @Cacheable(value = "listings", key = "#page + '-' + #size") // cachein her sayfa icin ayrı tutulmasını saglarmis
+    public Page<ListingDto> getAllListings(int page, int size){
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Listing> listingPage = listingRepository.findAll(pageable);
+        return listingPage.map(ListingDto::fromEntity);
     }
 
     @Transactional(readOnly = true)
