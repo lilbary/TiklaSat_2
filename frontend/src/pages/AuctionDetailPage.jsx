@@ -193,7 +193,16 @@ function AuctionDetailPage() {
               <CountdownBox value={countdown.seconds} label="Saniye" />
             </div>
           ) : (
-            <p className="text-sm font-semibold text-red-500">Bu açık artırma sona erdi.</p>
+            <div className="rounded-xl bg-slate-100 p-4">
+              <p className="text-sm font-semibold text-red-500">Bu açık artırma sona erdi.</p>
+              {auction.winnerName ? (
+                <p className="mt-1 text-sm text-slate-700">
+                  Kazanan: <span className="font-semibold">{auction.winnerName}</span>
+                </p>
+              ) : (
+                <p className="mt-1 text-sm text-slate-500">Hiç teklif almadan sona erdi.</p>
+              )}
+            </div>
           )}
 
           <div className="mt-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">

@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-import java.math.BigDecimal;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -40,9 +39,6 @@ public class Listing {
 
     @Column(name = "view_count", nullable = false)
     private Integer viewCount = 0;
-
-    @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal price;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
