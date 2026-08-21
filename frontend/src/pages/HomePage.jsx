@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 function Section({ title, children }) {
   return (
@@ -45,12 +45,16 @@ function AuctionCard({ auction }) {
 
 function HomePage() {
   const [auctions, setAuctions] = useState([])
+  const [searchParams] = useSearchParams()
 
   useEffect(() => {
     fetch('/api/auctions')
       .then((res) => res.json())
       .then(setAuctions)
   }, [])
+
+  const searchTerm = searchParams.get('ara') || ''
+  const categoryFilter = searchParams.get('kategori') || ''
 
   const now = Date.now()
   const in24h = now + 24 * 60 * 60 * 1000
@@ -60,9 +64,12 @@ function HomePage() {
   // süresi dolmuş (ENDED) olanlar hiçbir bölümde görünmemeli.
   // Kullanıcıya sadece gerçekten teklif verilebilen açık artırmalar gösterilir;
   // henüz artırmaya çıkarılmamış ham "ilan" kayıtları arka planda kalır.
-  const activeAuctions = auctions.filter(
-    (a) => a.status === 'ACTIVE' && new Date(a.endTime).getTime() > now
-  )
+  const activeAuctions = auctions.filter((a) => {
+    const isActive = a.status === 'ACTIVE' && new Date(a.endTime).getTime() > now
+    const matchesSearch = a.listingTitle.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCategory = categoryFilter ? a.categoryId === categoryFilter : true
+    return isActive && matchesSearch && matchesCategory
+  })
 
   const endingToday = activeAuctions.filter((a) => new Date(a.endTime).getTime() <= in24h)
   const endingThisWeek = activeAuctions.filter((a) => {
