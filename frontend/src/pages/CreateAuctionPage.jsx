@@ -10,6 +10,8 @@ function CreateAuctionPage() {
   const [categoryId, setCategoryId] = useState('')
   const [startingPrice, setStartingPrice] = useState('')
   const [endTime, setEndTime] = useState('')
+  const [selectedFiles, setSelectedFiles] = useState([])
+  const [previewUrls, setPreviewUrls] = useState([])
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -18,6 +20,16 @@ function CreateAuctionPage() {
       .then((res) => res.json())
       .then(setCategories)
   }, [])
+
+  // Fotoğraf seçildiğinde önizleme oluştur
+  function handleFileChange(e) {
+    const files = Array.from(e.target.files)
+    setSelectedFiles(files)
+
+    // Önizleme URL'lerini oluştur
+    const urls = files.map((file) => URL.createObjectURL(file))
+    setPreviewUrls(urls)
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -42,7 +54,19 @@ function CreateAuctionPage() {
 
     const listing = await listingRes.json()
 
-    // 2. Adım: İlanı hemen artırmaya çıkar
+    // 2. Adım: Seçilen fotoğrafları yükle
+    for (const file of selectedFiles) {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      await fetch(`/api/listings/${listing.id}/images`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      })
+    }
+
+    // 3. Adım: İlanı hemen artırmaya çıkar
     const auctionRes = await fetch('/api/auctions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -63,6 +87,7 @@ function CreateAuctionPage() {
     const auction = await auctionRes.json()
     navigate(`/artirma/${auction.id}`)
   }
+
   return (
     <div className="mx-auto max-w-xl px-6 py-10">
       <h1 className="mb-6 text-2xl font-bold text-slate-900">Açık Artırma Oluştur</h1>
@@ -97,6 +122,33 @@ function CreateAuctionPage() {
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
+
+        {/* FOTOĞRAF YÜKLEME ALANI */}
+        <div>
+          <label className="mb-2 block text-sm font-medium text-slate-700">
+            Fotoğraflar
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFileChange}
+            className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-600 hover:file:bg-blue-100"
+          />
+          {/* Fotoğraf Önizleme */}
+          {previewUrls.length > 0 && (
+            <div className="mt-3 grid grid-cols-4 gap-2">
+              {previewUrls.map((url, i) => (
+                <img
+                  key={i}
+                  src={url}
+                  alt={`Önizleme ${i + 1}`}
+                  className="aspect-square rounded-lg object-cover ring-1 ring-slate-200"
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
         <input
           type="number"

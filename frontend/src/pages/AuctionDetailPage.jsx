@@ -65,6 +65,15 @@ function CountdownBox({ value, label }) {
   )
 }
 
+// Fotoğraf yoksa başlığın ilk harfini gösteren placeholder
+function ImagePlaceholder({ letter }) {
+  return (
+    <div className="flex aspect-square items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-blue-50 text-8xl font-bold text-blue-300">
+      {letter}
+    </div>
+  )
+}
+
 function AuctionDetailPage() {
   const { id } = useParams()
   const { user } = useAuth()
@@ -75,6 +84,7 @@ function AuctionDetailPage() {
   const [bidAmount, setBidAmount] = useState('')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [selectedImage, setSelectedImage] = useState(0) // Hangi fotoğraf büyük gösteriliyor
 
   // 1. Sayfa açılınca artırmanın bilgisini ve teklif geçmişini çek
   useEffect(() => {
@@ -147,6 +157,10 @@ function AuctionDetailPage() {
     return <div className="mx-auto max-w-2xl px-6 py-16 text-slate-500">Yükleniyor...</div>
   }
 
+  // Fotoğraf listesi (API'den gelen veya boş)
+  const images = auction.imageUrls || []
+  const hasImages = images.length > 0
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <Link to="/" className="text-sm text-blue-600 hover:underline">
@@ -158,20 +172,49 @@ function AuctionDetailPage() {
       <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px]">
         {/* SOL KOLON: fotoğraflar + açıklama */}
         <div>
-          <div className="flex aspect-square items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-blue-50 text-8xl font-bold text-blue-300">
-            {auction.listingTitle.charAt(0)}
-          </div>
+          {/* ANA FOTOĞRAF */}
+          {hasImages ? (
+            <img
+              src={images[selectedImage]}
+              alt={auction.listingTitle}
+              className="aspect-square w-full rounded-2xl object-cover"
+            />
+          ) : (
+            <ImagePlaceholder letter={auction.listingTitle.charAt(0)} />
+          )}
 
-          <div className="mt-3 grid grid-cols-4 gap-3">
-            {[0, 1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="flex aspect-square items-center justify-center rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 text-2xl font-bold text-blue-300"
-              >
-                {auction.listingTitle.charAt(0)}
-              </div>
-            ))}
-          </div>
+          {/* KÜÇÜK FOTOĞRAF GALERİSİ */}
+          {hasImages && images.length > 1 && (
+            <div className="mt-3 grid grid-cols-4 gap-3">
+              {images.map((url, i) => (
+                <img
+                  key={i}
+                  src={url}
+                  alt={`Fotoğraf ${i + 1}`}
+                  onClick={() => setSelectedImage(i)}
+                  className={`aspect-square cursor-pointer rounded-xl object-cover transition-all ${
+                    selectedImage === i
+                      ? 'ring-2 ring-blue-500'
+                      : 'opacity-70 ring-1 ring-slate-200 hover:opacity-100'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* FOTOĞRAF YOKSA PLACEHOLDER KUTULARI */}
+          {!hasImages && (
+            <div className="mt-3 grid grid-cols-4 gap-3">
+              {[0, 1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="flex aspect-square items-center justify-center rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 text-2xl font-bold text-blue-300"
+                >
+                  {auction.listingTitle.charAt(0)}
+                </div>
+              ))}
+            </div>
+          )}
 
           {auction.listingDescription && (
             <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">

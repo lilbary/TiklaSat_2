@@ -1,10 +1,12 @@
 package com.gib.tiklasat.dto;
 
 import com.gib.tiklasat.entity.Auction;
+import com.gib.tiklasat.entity.ListingImage;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -22,6 +24,7 @@ public class AuctionDto {
     private Instant startTime;
     private Instant endTime;
     private String status;
+    private List<String> imageUrls;   // İlana ait fotoğraf URL'leri
 
     public static AuctionDto fromEntity(Auction auction, BigDecimal currentPrice) {
         AuctionDto dto = new AuctionDto();
@@ -38,6 +41,13 @@ public class AuctionDto {
         dto.setStartTime(auction.getStartTime());
         dto.setEndTime(auction.getEndTime());
         dto.setStatus(auction.getStatus());
+
+        // İlana ait fotoğrafların URL'lerini ekle
+        List<String> urls = auction.getListing().getImages().stream()
+                .map(ListingImage::getImageUrl)
+                .toList();
+        dto.setImageUrls(urls);
+
         return dto;
     }
 }

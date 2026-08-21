@@ -16,6 +16,7 @@ import com.gib.tiklasat.entity.OutboxEvent;
 import com.gib.tiklasat.repository.OutboxEventRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.Duration;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -83,6 +84,17 @@ public class BidService {
         // Java nesnesine yansımamış olurdu (null kalırdı) — aşağıda DTO'ya koyup WebSocket'e
         // yollayacağımız için hemen flush ederek gerçek değeri garantiliyoruz.
         bid = bidRepository.saveAndFlush(bid);
+
+        Instant now = Instant.now();
+        Instant sniperWindow = auction.getEndTime().minus(Duration.ofSeconds(120));
+        if (now.isAfter(sniperWindow) && auction.getExtensionCount() < 20) {
+            Instant newEnd = now.plus(Duration.ofSeconds(120));
+            auction.setEndTime(newEnd);
+            auction.setExtensionCount(auction.getExtensionCount() + 1);
+            auctionRepository.save(auction);
+        }
+
+
 
         // Outbox Pattern: WebSocket'e hemen haber verme, Outbox (Giden Kutusu) tablosuna not bırak.
         BidDto result = BidDto.fromEntity(bid);

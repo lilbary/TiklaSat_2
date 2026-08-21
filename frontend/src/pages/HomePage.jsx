@@ -28,14 +28,24 @@ function AuctionCard({ auction }) {
     minute: '2-digit',
   })
 
+  const hasImage = auction.imageUrls && auction.imageUrls.length > 0
+
   return (
     <Link to={`/artirma/${auction.id}`} className="block w-56 shrink-0">
-      <Placeholder
-        letter={auction.listingTitle.charAt(0)}
-        from="from-blue-100"
-        to="to-blue-50"
-        text="text-blue-300"
-      />
+      {hasImage ? (
+        <img
+          src={auction.imageUrls[0]}
+          alt={auction.listingTitle}
+          className="mb-3 h-40 w-full rounded-xl object-cover"
+        />
+      ) : (
+        <Placeholder
+          letter={auction.listingTitle.charAt(0)}
+          from="from-blue-100"
+          to="to-blue-50"
+          text="text-blue-300"
+        />
+      )}
       <p className="line-clamp-2 text-sm font-semibold text-slate-900">{auction.listingTitle}</p>
       <p className="mt-1 text-sm text-slate-600">{auction.currentPrice.toLocaleString('tr-TR')} TL</p>
       <p className="text-xs text-slate-400">Bitiş: {endLabel}</p>
