@@ -47,6 +47,12 @@ public class Auction {
     @JoinColumn(name = "winner_id")
     private User winner;
 
+    @Column(name = "original_ends_at", nullable = false)
+    private Instant originalEndsAt;
+
+    @Column(name = "extension_count", nullable = false)
+    private int extensionCount = 0;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

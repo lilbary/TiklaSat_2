@@ -45,39 +45,51 @@ public class SecurityConfig {
     }
 
     // GÜVENLİK KURALLARININ (GÜMRÜK POLİTİKASININ) YAZILDIĞI ANA YER
+    // GÜVENLİK KURALLARININ (GÜMRÜK POLİTİKASININ) YAZILDIĞI ANA YER
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // API yazdığımız için CSRF korumasına gerek yok
-            .authorizeHttpRequests(auth -> auth
-                // 1. GİRİŞ VE KAYIT SAYFASI HERKESE AÇIK OLMALI
-                .requestMatchers("/api/auth/**").permitAll()
-                
-                // 2. İLANLARA, KATEGORİLERE, AÇIK ARTIRMALARA VE TEKLİF GEÇMİŞİNE BAKMAK
-                // HERKESE AÇIK (Sadece GET istekleri) — teklif VERMEK (POST) hâlâ korumalı.
-                .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/listings/**", "/api/auctions/**", "/api/bids/**").permitAll()
+                // 1. FRONTEND İÇİN CORS İZNİ (Yeni eklediğimiz kısım)
+                .cors(cors -> cors.configurationSource(request -> {
+                    var corsConfig = new org.springframework.web.cors.CorsConfiguration();
+                    corsConfig.setAllowedOrigins(java.util.List.of("http://localhost:5173")); // Frontend'in adresi
+                    corsConfig.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    corsConfig.setAllowedHeaders(java.util.List.of("*"));
+                    corsConfig.setAllowCredentials(true);
+                    return corsConfig;
+                }))
+                .csrf(csrf -> csrf.disable()) // API yazdığımız için CSRF korumasına gerek yok
+                .authorizeHttpRequests(auth -> auth
+                        // 1. GİRİŞ VE KAYIT SAYFASI HERKESE AÇIK OLMALI
+                        .requestMatchers("/api/auth/**").permitAll()
 
-                // 2.5. WEBSOCKET BAĞLANTISI (SADECE DİNLEME) HERKESE AÇIK — teklif vermek
-                // hâlâ ayrı, korumalı bir uçtan (POST /api/bids, JWT ister) yapılıyor.
-                .requestMatchers("/ws-auction/**").permitAll()
+                        // 2. İLANLARA, KATEGORİLERE, AÇIK ARTIRMALARA VE TEKLİF GEÇMİŞİNE BAKMAK
+                        // HERKESE AÇIK (Sadece GET istekleri)
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/listings/**", "/api/auctions/**", "/api/bids/**").permitAll()
 
-                // 3. ADMIN PANELİ SADECE "ADMIN" ROLÜNE SAHİP OLANLARA AÇIK
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                
-                // 4. BUNLARIN DIŞINDAKİ HER ŞEY İÇİN KAPI KİLİTLİ (Giriş Yapmak Zorunlu)
-                .anyRequest().authenticated()
-            )
-            // Sistemimizde oturum (Session) tutmayacağız, her istek kendi Biletini (Token) getirecek (STATELESS)
-            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            
-            // Kimlik doğrulayıcıyı sisteme tanıtıyoruz
-            .authenticationProvider(authenticationProvider())
-            
-            // 1. Önce Hız Sınırı (Rate Limit) kalkanından geç
-            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
-            
-            // 2. Hız sınırını geçtiyse Jwt Kimlik kontrolünden geç
-            .addFilterAfter(jwtAuthFilter, RateLimitFilter.class);
+                        // YÜKLENEN FOTOĞRAFLARA ERİŞİM HERKESE AÇIK
+                        .requestMatchers("/uploads/**").permitAll()
+
+                        // 2.5. WEBSOCKET BAĞLANTISI (SADECE DİNLEME) HERKESE AÇIK
+                        .requestMatchers("/ws-auction/**").permitAll()
+
+                        // 3. ADMIN PANELİ SADECE "ADMIN" ROLÜNE SAHİP OLANLARA AÇIK
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // 4. BUNLARIN DIŞINDAKİ HER ŞEY İÇİN KAPI KİLİTLİ (Giriş Yapmak Zorunlu)
+                        .anyRequest().authenticated()
+                )
+                // Sistemimizde oturum (Session) tutmayacağız, her istek kendi Biletini (Token) getirecek (STATELESS)
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // Kimlik doğrulayıcıyı sisteme tanıtıyoruz
+                .authenticationProvider(authenticationProvider())
+
+                // 1. Önce Hız Sınırı (Rate Limit) kalkanından geç
+                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+
+                // 2. Hız sınırını geçtiyse Jwt Kimlik kontrolünden geç
+                .addFilterAfter(jwtAuthFilter, RateLimitFilter.class);
 
         return http.build();
     }

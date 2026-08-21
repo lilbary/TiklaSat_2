@@ -5,7 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-
+import java.util.List;
+import java.util.ArrayList;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -39,6 +40,10 @@ public class Listing {
 
     @Column(name = "view_count", nullable = false)
     private Integer viewCount = 0;
+
+    // Bu ilana ait fotoğraflar
+    @OneToMany(mappedBy = "listing", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ListingImage> images = new ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

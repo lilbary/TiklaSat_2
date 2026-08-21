@@ -16,6 +16,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.Duration;
 
 
 import java.math.BigDecimal;
@@ -67,6 +68,7 @@ public class AuctionService {
         auction.setStartTime(Instant.now()); // Başlangıç zamanı ŞU AN.
         auction.setEndTime(endTime);
         auction.setStatus("ACTIVE");
+        auction.setOriginalEndsAt(endTime);  // ← bunu ekle
 
         // Veritabanına kaydet
         auction = auctionRepository.save(auction);
