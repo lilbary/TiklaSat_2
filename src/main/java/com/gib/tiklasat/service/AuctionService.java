@@ -65,6 +65,7 @@ public class AuctionService {
         Auction auction = new Auction();
         auction.setListing(listing);
         auction.setStartingPrice(startingPrice);
+        auction.setCurrentPrice(startingPrice);
         auction.setStartTime(Instant.now()); // Başlangıç zamanı ŞU AN.
         auction.setEndTime(endTime);
         auction.setStatus("ACTIVE");
@@ -76,14 +77,6 @@ public class AuctionService {
         // Kullanıcıya Süzgeçten (DTO) geçirerek geri döndür — yeni açılan artırmada
         // henüz hiç teklif yok, güncel fiyat = başlangıç fiyatı.
         return AuctionDto.fromEntity(auction, auction.getStartingPrice());
-    }
-
-    // Bir artırmanın GERÇEK güncel fiyatını bulur: en yüksek teklif varsa o,
-    // yoksa (hiç teklif gelmemişse) başlangıç fiyatı.
-    private BigDecimal resolveCurrentPrice(Auction auction) {
-        return bidRepository.findTopByAuctionIdOrderByAmountDesc(auction.getId())
-                .map(bid -> bid.getAmount())
-                .orElse(auction.getStartingPrice());
     }
 
     // 3. AÇIK ARTIRMANIN BİTİŞ ZAMANI GELDİYSE DURUMUNU GÜNCELLE + KAZANANI BELİRLE
@@ -128,7 +121,7 @@ public class AuctionService {
     @Cacheable(value = "auctions_all")
     public List<AuctionDto> getAllAuctions() {
         return auctionRepository.findAll().stream()
-                .map(a -> AuctionDto.fromEntity(a, resolveCurrentPrice(a)))
+                .map(a -> AuctionDto.fromEntity(a, a.getCurrentPrice()))
                 .collect(Collectors.toList());
     }
 
@@ -138,6 +131,6 @@ public class AuctionService {
     public AuctionDto getAuctionById(UUID id) {
         Auction auction = auctionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Açık artırma bulunamadı!"));
-        return AuctionDto.fromEntity(auction, resolveCurrentPrice(auction));
+        return AuctionDto.fromEntity(auction, auction.getCurrentPrice());
     }
 }

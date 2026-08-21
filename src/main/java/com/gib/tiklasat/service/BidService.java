@@ -85,6 +85,8 @@ public class BidService {
         // yollayacağımız için hemen flush ederek gerçek değeri garantiliyoruz.
         bid = bidRepository.saveAndFlush(bid);
 
+        auction.setCurrentPrice(amount);
+
         Instant now = Instant.now();
         Instant sniperWindow = auction.getEndTime().minus(Duration.ofSeconds(120));
         if (now.isAfter(sniperWindow) && auction.getExtensionCount() < 20) {

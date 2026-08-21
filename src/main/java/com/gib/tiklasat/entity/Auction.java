@@ -30,6 +30,9 @@ public class Auction {
     @Column(name = "start_price", nullable = false, precision = 15, scale = 2)
     private BigDecimal startingPrice;
 
+    @Column(name = "current_price", nullable = false, precision = 15, scale = 2)
+    private BigDecimal currentPrice;
+
     // Açık Artırma Başlangıç Zamanı — DB kolonu "starts_at" (migration V4)
     @Column(name = "starts_at", nullable = false)
     private Instant startTime;
