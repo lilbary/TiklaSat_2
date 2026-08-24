@@ -9,7 +9,8 @@ function CreateAuctionPage() {
   const [description, setDescription] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [startingPrice, setStartingPrice] = useState('')
-  const [endTime, setEndTime] = useState('')
+  const [duration, setDuration] = useState('1') // Varsayılan 1 gün
+  const [endingHour, setEndingHour] = useState('20') // Varsayılan 20:00
   const [selectedFiles, setSelectedFiles] = useState([])
   const [previewUrls, setPreviewUrls] = useState([])
   const [error, setError] = useState('')
@@ -21,71 +22,100 @@ function CreateAuctionPage() {
       .then(setCategories)
   }, [])
 
-  // Fotoğraf seçildiğinde önizleme oluştur
+  // Fotoğraf seçildiğinde önizleme oluştur ve limitleri kontrol et
   function handleFileChange(e) {
     const files = Array.from(e.target.files)
-    setSelectedFiles(files)
+    
+    if (files.length > 10) {
+      alert('En fazla 10 fotoğraf seçebilirsiniz. Yalnızca ilk 10 fotoğraf eklenecek.')
+    }
+    
+    // Maksimum 10 fotoğraf al
+    const limitedFiles = files.slice(0, 10)
+    setSelectedFiles(limitedFiles)
 
     // Önizleme URL'lerini oluştur
-    const urls = files.map((file) => URL.createObjectURL(file))
+    const urls = limitedFiles.map((file) => URL.createObjectURL(file))
     setPreviewUrls(urls)
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
-    setSubmitting(true)
 
+    // Minimum 1 fotoğraf kontrolü
+    if (selectedFiles.length === 0) {
+      setError('Lütfen ilana en az 1 adet fotoğraf ekleyin.')
+      return
+    }
+
+    setSubmitting(true)
     const token = localStorage.getItem('token')
 
-    // 1. Adım: Önce ilanı oluştur
-    const listingRes = await fetch('/api/listings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ title, description, categoryId }),
-    })
-
-    if (!listingRes.ok) {
-      const data = await listingRes.json()
-      setError(data.message || 'İlan oluşturulamadı')
-      setSubmitting(false)
-      return
-    }
-
-    const listing = await listingRes.json()
-
-    // 2. Adım: Seçilen fotoğrafları yükle
-    for (const file of selectedFiles) {
-      const formData = new FormData()
-      formData.append('file', file)
-
-      await fetch(`/api/listings/${listing.id}/images`, {
+    try {
+      // 1. Adım: Önce ilanı oluştur
+      const listingRes = await fetch('/api/listings', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ title, description, categoryId }),
       })
-    }
 
-    // 3. Adım: İlanı hemen artırmaya çıkar
-    const auctionRes = await fetch('/api/auctions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        listingId: listing.id,
-        startingPrice: Number(startingPrice),
-        endTime: new Date(endTime).toISOString(),
-      }),
-    })
+      if (!listingRes.ok) {
+        const data = await listingRes.json()
+        throw new Error(data.message || 'İlan oluşturulamadı')
+      }
 
-    if (!auctionRes.ok) {
-      const data = await auctionRes.json()
-      setError(data.message || 'Artırma başlatılamadı')
+      const listing = await listingRes.json()
+
+      // 2. Adım: Seçilen fotoğrafları yükle
+      for (const file of selectedFiles) {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const imgRes = await fetch(`/api/listings/${listing.id}/images`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        })
+        
+        if (!imgRes.ok) {
+          let errMsg = 'Fotoğraflar yüklenirken bir hata oluştu'
+          try {
+            const errData = await imgRes.json()
+            errMsg = errData.message || errMsg
+          } catch(e) {}
+          throw new Error(errMsg)
+        }
+      }
+
+      // Seçilen gün ve prime time saatine göre Bitiş Zamanını (endTime) hesapla
+      const endTimeDate = new Date()
+      endTimeDate.setDate(endTimeDate.getDate() + parseInt(duration, 10))
+      endTimeDate.setHours(parseInt(endingHour, 10), 0, 0, 0) // Kullanıcının seçtiği tam saat (Örn: 20:00:00)
+
+      // 3. Adım: İlanı hemen artırmaya çıkar
+      const auctionRes = await fetch('/api/auctions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          listingId: listing.id,
+          startingPrice: Number(startingPrice),
+          endTime: endTimeDate.toISOString(),
+        }),
+      })
+
+      if (!auctionRes.ok) {
+        const data = await auctionRes.json()
+        throw new Error(data.message || 'Artırma başlatılamadı')
+      }
+
+      const auction = await auctionRes.json()
+      navigate(`/artirma/${auction.id}`)
+      
+    } catch (err) {
+      setError(err.message)
       setSubmitting(false)
-      return
     }
-
-    const auction = await auctionRes.json()
-    navigate(`/artirma/${auction.id}`)
   }
 
   return (
@@ -126,7 +156,7 @@ function CreateAuctionPage() {
         {/* FOTOĞRAF YÜKLEME ALANI */}
         <div>
           <label className="mb-2 block text-sm font-medium text-slate-700">
-            Fotoğraflar
+            Fotoğraflar (En az 1, en fazla 10)
           </label>
           <input
             type="file"
@@ -139,12 +169,16 @@ function CreateAuctionPage() {
           {previewUrls.length > 0 && (
             <div className="mt-3 grid grid-cols-4 gap-2">
               {previewUrls.map((url, i) => (
-                <img
-                  key={i}
-                  src={url}
-                  alt={`Önizleme ${i + 1}`}
-                  className="aspect-square rounded-lg object-cover ring-1 ring-slate-200"
-                />
+                <div key={i} className="relative aspect-square">
+                  <img
+                    src={url}
+                    alt={`Önizleme ${i + 1}`}
+                    className="h-full w-full rounded-lg object-cover ring-1 ring-slate-200"
+                  />
+                  <div className="absolute top-1 right-1 rounded bg-black/50 px-1.5 py-0.5 text-xs text-white">
+                    {i + 1}
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -159,15 +193,47 @@ function CreateAuctionPage() {
           className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
 
-        <input
-          type="datetime-local"
-          required
-          value={endTime}
-          onChange={(e) => setEndTime(e.target.value)}
-          className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+        {/* SÜRE VE SAAT SEÇİMİ */}
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Açık Artırma Süresi
+            </label>
+            <select
+              required
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="1">1 Gün</option>
+              <option value="3">3 Gün</option>
+              <option value="7">1 Hafta (7 Gün)</option>
+              <option value="15">15 Gün</option>
+              <option value="30">1 Ay (30 Gün)</option>
+            </select>
+          </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+          <div className="flex-1">
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Bitiş Saati (Prime Time)
+            </label>
+            <select
+              required
+              value={endingHour}
+              onChange={(e) => setEndingHour(e.target.value)}
+              className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="18">18:00 (Akşam Üstü)</option>
+              <option value="19">19:00</option>
+              <option value="20">20:00 (Prime Time)</option>
+              <option value="21">21:00 (Prime Time)</option>
+              <option value="22">22:00 (Gece)</option>
+              <option value="23">23:00 (Gece)</option>
+            </select>
+          </div>
+        </div>
+
+        {error && <p className="text-sm font-medium text-red-600">{error}</p>}
 
         <button
           type="submit"

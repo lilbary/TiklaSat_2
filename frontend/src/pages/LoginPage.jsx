@@ -13,21 +13,26 @@ function LoginPage() {
     e.preventDefault()
     setError('')
 
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
 
-    if (!response.ok) {
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        setError(data.message || 'Giriş başarısız (' + response.status + ')')
+        return
+      }
+
       const data = await response.json()
-      setError(data.message || 'Giriş başarısız')
-      return
+      login(data.token)
+      navigate('/')
+    } catch (err) {
+      console.error(err)
+      setError('Bağlantı hatası: ' + err.message)
     }
-
-    const data = await response.json()
-    login(data.token)
-    navigate('/')
   }
 
   return (

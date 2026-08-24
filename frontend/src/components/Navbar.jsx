@@ -2,13 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 
-const CATEGORY_COLORS = [
-  'from-blue-200 to-blue-100 text-blue-700',
-  'from-emerald-200 to-emerald-100 text-emerald-700',
-  'from-amber-200 to-amber-100 text-amber-700',
-  'from-rose-200 to-rose-100 text-rose-700',
-]
-
 function HeartIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5">
@@ -49,13 +42,39 @@ function Navbar() {
   const [searchTerm, setSearchTerm] = useState('')
   const [categoriesOpen, setCategoriesOpen] = useState(false)
   const [categories, setCategories] = useState([])
+  const [subCategories, setSubCategories] = useState({}) // Cache for subcategories
+  const [activeCategoryId, setActiveCategoryId] = useState(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   useEffect(() => {
     fetch('/api/categories')
       .then((res) => res.json())
-      .then(setCategories)
+      .then((data) => {
+        setCategories(data)
+        if (data.length > 0) {
+          setActiveCategoryId(data[0].id) // Varsayılan ilk kategoriyi seç
+          fetchSubCategories(data[0].id)
+        }
+      })
   }, [])
+
+  // Alt kategorileri getir ve önbelleğe (cache) al
+  const fetchSubCategories = async (parentId) => {
+    if (!subCategories[parentId]) {
+      try {
+        const res = await fetch(`/api/categories/${parentId}/subcategories`)
+        const data = await res.json()
+        setSubCategories((prev) => ({ ...prev, [parentId]: data }))
+      } catch (err) {
+        console.error('Alt kategoriler yüklenemedi', err)
+      }
+    }
+  }
+
+  const handleCategoryHover = (catId) => {
+    setActiveCategoryId(catId)
+    fetchSubCategories(catId)
+  }
 
   function handleCategoryClick(categoryId) {
     setCategoriesOpen(false)
@@ -73,23 +92,85 @@ function Navbar() {
   }
 
   return (
-    <nav className="flex items-center gap-6 border-b border-slate-200 bg-white px-6 py-4">
+    // 1. DÜZELTME: sticky top-0 z-50 ile navbar'ı her zaman üstte tutuyoruz
+    <nav className="sticky top-0 z-50 flex items-center gap-6 border-b border-slate-200 bg-white px-6 py-4">
       <Link to="/" className="text-xl font-bold text-blue-600">TıklaSat</Link>
 
-      <button
-        onClick={() => setCategoriesOpen(true)}
-        className="text-sm font-medium text-slate-700 hover:text-blue-600"
+      <div
+        className="relative"
+        onMouseEnter={() => setCategoriesOpen(true)}
+        onMouseLeave={() => setCategoriesOpen(false)}
       >
-        Kategoriler
-      </button>
+        <button
+          className="flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-blue-600 py-2"
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          Kategoriler
+        </button>
+
+        {/* 2. DÜZELTME: Trendyol Tarzı Mega Menü */}
+        {categoriesOpen && (
+          <div className="absolute top-full left-[-100px] w-[800px] bg-white shadow-2xl rounded-b-lg border border-slate-100 flex min-h-[400px]">
+            {/* Sol Menü: Ana Kategoriler */}
+            <div className="w-1/4 bg-slate-50 border-r border-slate-200 py-4">
+              {categories.map((cat) => (
+                <div
+                  key={cat.id}
+                  onMouseEnter={() => handleCategoryHover(cat.id)}
+                  onClick={() => handleCategoryClick(cat.id)}
+                  className={`cursor-pointer px-6 py-3 text-sm font-medium transition-colors ${
+                    activeCategoryId === cat.id
+                      ? 'bg-white text-blue-600 border-l-4 border-blue-600 font-bold shadow-sm'
+                      : 'text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  {cat.name}
+                  {activeCategoryId === cat.id && (
+                    <span className="float-right text-blue-600">&gt;</span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Sağ Menü: Alt Kategoriler */}
+            <div className="w-3/4 p-8 bg-white">
+              <h3 className="text-lg font-bold text-slate-800 mb-6 border-b pb-2">
+                {categories.find(c => c.id === activeCategoryId)?.name} Kategorisi
+              </h3>
+              
+              <div className="grid grid-cols-3 gap-6">
+                {/* Eğer veritabanında alt kategori yoksa placeholder gösterelim */}
+                {(!subCategories[activeCategoryId] || subCategories[activeCategoryId].length === 0) ? (
+                  <div className="col-span-3 text-sm text-slate-500 italic">
+                    Henüz alt kategori bulunmuyor. Ana kategoriye gitmek için yandaki menüye tıklayabilirsiniz.
+                  </div>
+                ) : (
+                  subCategories[activeCategoryId].map((subCat) => (
+                    <div key={subCat.id} className="flex flex-col gap-2">
+                      <button
+                        onClick={() => handleCategoryClick(subCat.id)}
+                        className="text-left text-sm font-bold text-slate-800 hover:text-blue-600"
+                      >
+                        {subCat.name}
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       <input
         type="text"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         onKeyDown={handleSearch}
-        placeholder="Marka, model ara..."
-        className="flex-1 rounded-md border border-slate-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="Marka, ürün veya kategori ara..."
+        className="flex-1 rounded-md border border-slate-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       />
 
       {user ? (
@@ -113,7 +194,7 @@ function Navbar() {
               className="flex items-center gap-1.5 text-sm font-medium text-slate-700 hover:text-blue-600"
             >
               <UserIcon />
-              {user.sub}
+              <span className="max-w-[100px] truncate">{user.sub}</span>
               <ChevronDownIcon />
             </button>
 
@@ -124,7 +205,6 @@ function Navbar() {
                   <p className="px-4 pb-1 pt-1 text-xs font-semibold uppercase tracking-wide text-slate-400">
                     Keşfet
                   </p>
-                  {/* TODO: sayfaları birlikte kurup buraya link olarak bağlayacağız */}
                   <button
                     type="button"
                     className="block w-full px-4 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
@@ -141,12 +221,13 @@ function Navbar() {
                   <p className="mt-2 border-t border-slate-100 px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                     Hesabım
                   </p>
-                  <button
-                    type="button"
+                  <Link
+                    to="/ayarlar"
+                    onClick={() => setUserMenuOpen(false)}
                     className="block w-full px-4 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
                   >
                     Ayarlar
-                  </button>
+                  </Link>
                   <button
                     type="button"
                     className="block w-full px-4 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
@@ -171,44 +252,10 @@ function Navbar() {
           <Link to="/giris" className="text-sm font-medium text-slate-700 hover:text-blue-600">
             Giriş Yap
           </Link>
-          <Link to="/kayit" className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+          <Link to="/kayit" className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors">
             Kayıt Ol
           </Link>
         </>
-      )}
-
-      {categoriesOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-6 pt-24"
-          onClick={() => setCategoriesOpen(false)}
-        >
-          <div
-            className="w-full max-w-3xl rounded-2xl bg-white p-6 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-900">Kategoriler</h2>
-              <button
-                onClick={() => setCategoriesOpen(false)}
-                className="text-2xl text-slate-400 hover:text-slate-700"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {categories.map((cat, i) => (
-                <button
-                  key={cat.id}
-                  onClick={() => handleCategoryClick(cat.id)}
-                  className={`flex h-32 items-end rounded-xl bg-gradient-to-br p-4 text-left text-lg font-bold ${CATEGORY_COLORS[i % CATEGORY_COLORS.length]}`}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
       )}
     </nav>
   )

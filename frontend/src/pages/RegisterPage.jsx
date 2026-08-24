@@ -22,8 +22,8 @@ function RegisterPage() {
     })
 
     if (!response.ok) {
-      const data = await response.json()
-      setError(data.message || 'Kayıt başarısız')
+      const data = await response.json().catch(() => ({}))
+      setError(data.message || 'Kayıt başarısız (' + response.status + ')')
       return
     }
 
