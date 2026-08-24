@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
+import AdminUsersPage from './pages/AdminUsersPage'
 import Navbar from './components/Navbar'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
@@ -15,6 +16,7 @@ function App() {
         <Route path="/giris" element={<LoginPage />} />
         <Route path="/kayit" element={<RegisterPage />} />
         <Route path="/artirma/:id" element={<AuctionDetailPage />} />
+        <Route path="/admin/kullanicilar" element={<AdminUsersPage />} />
         <Route path="/artirma-olustur" element={<CreateAuctionPage />} />
       </Routes>
     </div>
