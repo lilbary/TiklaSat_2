@@ -17,6 +17,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 
 import java.math.BigDecimal;
@@ -114,6 +117,16 @@ public class AuctionService {
 
             auctionRepository.save(auction);
         }
+    }
+
+    // Arama/kategori filtresiyle, sayfalı açık artırma listesi — filtreleme artık
+    // veritabanında (native SQL sorgusuyla) yapılıyor, cache YOK çünkü arama
+    // terimi kombinasyonu sonsuz, cache'lemek anlamsız/verimsiz olurdu.
+    @Transactional(readOnly = true)
+    public Page<AuctionDto> searchAuctions(String search, UUID categoryId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Auction> auctionPage = auctionRepository.searchActiveAuctions(search, categoryId, pageable);
+        return auctionPage.map(a -> AuctionDto.fromEntity(a, a.getCurrentPrice()));
     }
 
     // TÜM AÇIK ARTIRMALARI LİSTELE (Ana Sayfa İçin)

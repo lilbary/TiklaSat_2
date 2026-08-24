@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import jakarta.persistence.LockModeType;
 import java.time.Instant;
@@ -29,4 +31,28 @@ public interface AuctionRepository extends JpaRepository<Auction, UUID> {
     
     // 4. Sadece aktif (veya sadece bitmiş) olan açık artırmaları bulmak için
     List<Auction> findByStatus(String status);
+
+    @Query(
+        value = """
+                SELECT a.* FROM auctions a
+        JOIN listings l ON a.listing_id = l.id
+        WHERE a.status = 'ACTIVE' AND a.ends_at > now()
+        AND (:search IS NULL OR l.title ILIKE CONCAT('%', :search, '%'))
+        AND (:categoryId IS NULL OR l.category_id = :categoryId)
+                """,
+        countQuery = """
+                SELECT count(*) FROM auctions a
+        JOIN listings l ON a.listing_id = l.id
+        WHERE a.status = 'ACTIVE' AND a.ends_at > now()
+        AND (:search IS NULL OR l.title ILIKE CONCAT('%', :search, '%'))
+        AND (:categoryId IS NULL OR l.category_id = :categoryId)
+                """,
+        
+        nativeQuery = true
+    )
+    Page<Auction> searchActiveAuctions(
+        @Param("search") String search,
+        @Param("categoryId") UUID categoryId,
+        Pageable pageable
+    );
 }
