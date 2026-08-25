@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext.jsx'
+import { useFavorites } from '../context/FavoritesContext.jsx'
 
 function Section({ title, children }) {
   return (
@@ -13,10 +15,53 @@ function Section({ title, children }) {
 function Placeholder({ letter, from, to, text }) {
   return (
     <div
-      className={`mb-3 flex h-40 items-center justify-center rounded-xl bg-gradient-to-br ${from} ${to} text-4xl font-bold ${text}`}
+      className={`flex h-40 items-center justify-center rounded-xl bg-gradient-to-br ${from} ${to} text-4xl font-bold ${text}`}
     >
       {letter}
     </div>
+  )
+}
+
+function HeartButton({ auctionId }) {
+  const { user } = useAuth()
+  const { favoriteIds, toggleFavorite } = useFavorites()
+  const navigate = useNavigate()
+  const isFavorited = favoriteIds.has(auctionId)
+
+  function handleClick(e) {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!user) {
+      navigate('/giris')
+      return
+    }
+    toggleFavorite(auctionId)
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      aria-label={isFavorited ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+      className={`absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow ${
+        isFavorited ? 'text-rose-500' : 'text-slate-600 hover:text-rose-500'
+      }`}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+        fill={isFavorited ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="1.5"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 21s-7.5-4.5-9.5-9C1 8.5 2.5 5 6 5c2 0 3.5 1.2 4 2.5C10.5 6.2 12 5 14 5c3.5 0 5 3.5 3.5 7-2 4.5-9.5 9-9.5 9z"
+        />
+      </svg>
+    </button>
   )
 }
 
@@ -32,20 +77,23 @@ function AuctionCard({ auction }) {
 
   return (
     <Link to={`/artirma/${auction.id}`} className="block w-56 shrink-0">
-      {hasImage ? (
-        <img
-          src={auction.imageUrls[0]}
-          alt={auction.listingTitle}
-          className="mb-3 h-40 w-full rounded-xl object-cover"
-        />
-      ) : (
-        <Placeholder
-          letter={auction.listingTitle.charAt(0)}
-          from="from-blue-100"
-          to="to-blue-50"
-          text="text-blue-300"
-        />
-      )}
+      <div className="relative mb-3">
+        {hasImage ? (
+          <img
+            src={auction.imageUrls[0]}
+            alt={auction.listingTitle}
+            className="h-40 w-full rounded-xl object-cover"
+          />
+        ) : (
+          <Placeholder
+            letter={auction.listingTitle.charAt(0)}
+            from="from-blue-100"
+            to="to-blue-50"
+            text="text-blue-300"
+          />
+        )}
+        <HeartButton auctionId={auction.id} />
+      </div>
       <p className="line-clamp-2 text-sm font-semibold text-slate-900">{auction.listingTitle}</p>
       <p className="mt-1 text-sm text-slate-600">{auction.currentPrice.toLocaleString('tr-TR')} TL</p>
       <p className="text-xs text-slate-400">Bitiş: {endLabel}</p>
