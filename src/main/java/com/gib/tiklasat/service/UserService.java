@@ -16,12 +16,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.lang.module.ResolutionException;
+import com.gib.tiklasat.dto.UserProfileUpdateDto;
+import com.gib.tiklasat.dto.ChangePasswordDto;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public UserDto getUserProfile(String email){
@@ -34,6 +38,31 @@ public class UserService {
         return userRepository.findAll().stream()
                 .map(UserDto::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public UserDto updateProfile(String email, UserProfileUpdateDto dto) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı Bulunamadı"));
+        
+        user.setFullName(dto.getFullName());
+        user.setPhone(dto.getPhone());
+        
+        User updatedUser = userRepository.save(user);
+        return UserDto.fromEntity(updatedUser);
+    }
+
+    @Transactional
+    public void changePassword(String email, ChangePasswordDto dto) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı Bulunamadı"));
+
+        if (!passwordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Eski şifreniz yanlış!");
+        }
+
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        userRepository.save(user);
     }
 
 }

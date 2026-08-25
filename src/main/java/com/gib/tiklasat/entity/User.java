@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.ArrayList;
 
 @Getter
 @Setter
@@ -78,4 +79,13 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    // mappedBy = "user" -> Address sınıfındaki "user" alanına işaret eder
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<Address> addresses = new ArrayList<>();
 }
