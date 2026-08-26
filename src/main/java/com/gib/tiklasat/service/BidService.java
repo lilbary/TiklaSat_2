@@ -1,6 +1,8 @@
 package com.gib.tiklasat.service;
 
+import com.gib.tiklasat.dto.AuctionDto;
 import com.gib.tiklasat.dto.BidDto;
+import com.gib.tiklasat.dto.MyBidDto;
 import com.gib.tiklasat.entity.Auction;
 import com.gib.tiklasat.entity.Bid;
 import com.gib.tiklasat.entity.User;
@@ -20,8 +22,11 @@ import java.time.Duration;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -127,6 +132,34 @@ public class BidService {
         return bidRepository.findAllByAuctionIdOrderByCreatedAtDesc(auctionId).stream()
                 .map(BidDto::fromEntity)
                 .toList();
+    }
+
+    // KULLANICININ TEKLİF VERDİĞİ TÜM AÇIK ARTIRMALAR — her auction için EN YÜKSEK teklifim
+    @Transactional(readOnly = true)
+    public List<MyBidDto> getMyBids(String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı bulunamadı!"));
+
+        List<Bid> myBids = bidRepository.findByBidderId(user.getId());
+
+        // Aynı auction'a birden fazla teklif vermiş olabilirim — auction ID'sine göre grupla
+        Map<UUID, List<Bid>> bidsByAuction = myBids.stream()
+                .collect(Collectors.groupingBy(bid -> bid.getAuction().getId()));
+
+        return bidsByAuction.values().stream()
+                .map(bidsForOneAuction -> {
+                    Bid highestBid = bidsForOneAuction.stream()
+                            .max(Comparator.comparing(Bid::getAmount))
+                            .orElseThrow();
+                    Auction auction = highestBid.getAuction();
+
+                    MyBidDto dto = new MyBidDto();
+                    dto.setAuction(AuctionDto.fromEntity(auction, auction.getCurrentPrice()));
+                    dto.setMyBidAmount(highestBid.getAmount());
+                    dto.setWinning(highestBid.getAmount().compareTo(auction.getCurrentPrice()) == 0);
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
     // YARDIMCI METOT: Kademeli Artış Tablosu

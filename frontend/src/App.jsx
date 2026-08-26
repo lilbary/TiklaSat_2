@@ -7,6 +7,7 @@ import RegisterPage from './pages/RegisterPage'
 import AuctionDetailPage from './pages/AuctionDetailPage'
 import CreateAuctionPage from './pages/CreateAuctionPage'
 import SettingsPage from './pages/SettingsPage'
+import TekliflerimVeFavorilerimPage from './pages/TekliflerimVeFavorilerimPage'
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/admin/kullanicilar" element={<AdminUsersPage />} />
         <Route path="/artirma-olustur" element={<CreateAuctionPage />} />
         <Route path="/ayarlar" element={<SettingsPage />} />
+        <Route path="/tekliflerim-ve-favorilerim" element={<TekliflerimVeFavorilerimPage />} />
       </Routes>
     </div>
   )

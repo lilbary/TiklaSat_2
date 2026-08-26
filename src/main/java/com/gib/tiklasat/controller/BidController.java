@@ -2,6 +2,7 @@ package com.gib.tiklasat.controller;
 
 import com.gib.tiklasat.dto.BidCreateDto;
 import com.gib.tiklasat.dto.BidDto;
+import com.gib.tiklasat.dto.MyBidDto;
 import com.gib.tiklasat.service.BidService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -39,5 +40,12 @@ public class BidController {
     @GetMapping("/auction/{auctionId}")
     public ResponseEntity<List<BidDto>> getBidHistory(@PathVariable UUID auctionId) {
         return ResponseEntity.ok(bidService.getBidHistory(auctionId));
+    }
+
+    // KULLANICININ TEKLİF VERDİĞİ TÜM AÇIK ARTIRMALAR
+    @GetMapping("/mine")
+    public ResponseEntity<List<MyBidDto>> getMyBids(Authentication authentication) {
+        String userEmail = (String) authentication.getPrincipal();
+        return ResponseEntity.ok(bidService.getMyBids(userEmail));
     }
 }

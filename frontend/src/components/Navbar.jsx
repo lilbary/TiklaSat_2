@@ -205,12 +205,13 @@ function Navbar() {
                   <p className="px-4 pb-1 pt-1 text-xs font-semibold uppercase tracking-wide text-slate-400">
                     Keşfet
                   </p>
-                  <button
-                    type="button"
+                  <Link
+                    to="/tekliflerim-ve-favorilerim"
+                    onClick={() => setUserMenuOpen(false)}
                     className="block w-full px-4 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
                   >
                     Tekliflerim ve Favorilerim
-                  </button>
+                  </Link>
                   <button
                     type="button"
                     className="block w-full px-4 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"

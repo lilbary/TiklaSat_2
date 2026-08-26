@@ -65,7 +65,7 @@ function HeartButton({ auctionId }) {
   )
 }
 
-function AuctionCard({ auction }) {
+export function AuctionCard({ auction }) {
   const endLabel = new Date(auction.endTime).toLocaleString('tr-TR', {
     day: '2-digit',
     month: 'short',
