@@ -26,4 +26,7 @@ public interface BidRepository extends JpaRepository<Bid, UUID> {
 
     // 3. Bir açık artırmadaki EN YÜKSEK teklifi getir (Kazananı bulmak için)
     Optional<Bid> findTopByAuctionIdOrderByAmountDesc(UUID auctionId);
+
+    // 4. Benim (satıcının) ilanlarına verilmiş TÜM teklifler — "Aldığım Teklifler" sayfası için
+    List<Bid> findByAuctionListingSellerId(UUID sellerId);
 }

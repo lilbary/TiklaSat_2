@@ -179,9 +179,9 @@ function Navbar() {
             Artırma Oluştur
           </Link>
 
-          <button type="button" aria-label="Favoriler" className="text-slate-700 hover:text-blue-600">
+          <Link to="/tekliflerim-ve-favorilerim" aria-label="Favoriler" className="text-slate-700 hover:text-blue-600">
             <HeartIcon />
-          </button>
+          </Link>
 
           <button type="button" aria-label="Bildirimler" className="text-slate-700 hover:text-blue-600">
             <BellIcon />
@@ -212,12 +212,13 @@ function Navbar() {
                   >
                     Tekliflerim ve Favorilerim
                   </Link>
-                  <button
-                    type="button"
+                  <Link
+                    to="/aldigim-teklifler"
+                    onClick={() => setUserMenuOpen(false)}
                     className="block w-full px-4 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
                   >
                     Aldığım Teklifler
-                  </button>
+                  </Link>
 
                   <p className="mt-2 border-t border-slate-100 px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                     Hesabım

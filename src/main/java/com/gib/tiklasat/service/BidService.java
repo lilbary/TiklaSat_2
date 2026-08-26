@@ -3,6 +3,7 @@ package com.gib.tiklasat.service;
 import com.gib.tiklasat.dto.AuctionDto;
 import com.gib.tiklasat.dto.BidDto;
 import com.gib.tiklasat.dto.MyBidDto;
+import com.gib.tiklasat.dto.ReceivedBidDto;
 import com.gib.tiklasat.entity.Auction;
 import com.gib.tiklasat.entity.Bid;
 import com.gib.tiklasat.entity.User;
@@ -157,6 +158,33 @@ public class BidService {
                     dto.setAuction(AuctionDto.fromEntity(auction, auction.getCurrentPrice()));
                     dto.setMyBidAmount(highestBid.getAmount());
                     dto.setWinning(highestBid.getAmount().compareTo(auction.getCurrentPrice()) == 0);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    // İLANLARIMA VERİLMİŞ TÜM TEKLİFLER — her auction için EN YÜKSEK teklif + kim verdi
+    @Transactional(readOnly = true)
+    public List<ReceivedBidDto> getReceivedBids(String sellerEmail) {
+        User seller = userRepository.findByEmail(sellerEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı bulunamadı!"));
+
+        List<Bid> receivedBids = bidRepository.findByAuctionListingSellerId(seller.getId());
+
+        Map<UUID, List<Bid>> bidsByAuction = receivedBids.stream()
+                .collect(Collectors.groupingBy(bid -> bid.getAuction().getId()));
+
+        return bidsByAuction.values().stream()
+                .map(bidsForOneAuction -> {
+                    Bid topBid = bidsForOneAuction.stream()
+                            .max(Comparator.comparing(Bid::getAmount))
+                            .orElseThrow();
+                    Auction auction = topBid.getAuction();
+
+                    ReceivedBidDto dto = new ReceivedBidDto();
+                    dto.setAuction(AuctionDto.fromEntity(auction, auction.getCurrentPrice()));
+                    dto.setTopBidAmount(topBid.getAmount());
+                    dto.setTopBidderName(topBid.getBidder().getFullName());
                     return dto;
                 })
                 .collect(Collectors.toList());

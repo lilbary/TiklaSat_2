@@ -8,6 +8,7 @@ import AuctionDetailPage from './pages/AuctionDetailPage'
 import CreateAuctionPage from './pages/CreateAuctionPage'
 import SettingsPage from './pages/SettingsPage'
 import TekliflerimVeFavorilerimPage from './pages/TekliflerimVeFavorilerimPage'
+import AldigimTekliflerPage from './pages/AldigimTekliflerPage'
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/artirma-olustur" element={<CreateAuctionPage />} />
         <Route path="/ayarlar" element={<SettingsPage />} />
         <Route path="/tekliflerim-ve-favorilerim" element={<TekliflerimVeFavorilerimPage />} />
+        <Route path="/aldigim-teklifler" element={<AldigimTekliflerPage />} />
       </Routes>
     </div>
   )

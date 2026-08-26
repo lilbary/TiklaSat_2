@@ -3,6 +3,7 @@ package com.gib.tiklasat.controller;
 import com.gib.tiklasat.dto.BidCreateDto;
 import com.gib.tiklasat.dto.BidDto;
 import com.gib.tiklasat.dto.MyBidDto;
+import com.gib.tiklasat.dto.ReceivedBidDto;
 import com.gib.tiklasat.service.BidService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -47,5 +48,12 @@ public class BidController {
     public ResponseEntity<List<MyBidDto>> getMyBids(Authentication authentication) {
         String userEmail = (String) authentication.getPrincipal();
         return ResponseEntity.ok(bidService.getMyBids(userEmail));
+    }
+
+    // İLANLARIMA VERİLMİŞ TÜM TEKLİFLER (Satıcı gözünden)
+    @GetMapping("/received")
+    public ResponseEntity<List<ReceivedBidDto>> getReceivedBids(Authentication authentication) {
+        String sellerEmail = (String) authentication.getPrincipal();
+        return ResponseEntity.ok(bidService.getReceivedBids(sellerEmail));
     }
 }
