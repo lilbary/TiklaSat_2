@@ -68,7 +68,7 @@ function CountdownBox({ value, label }) {
 // Fotoğraf yoksa başlığın ilk harfini gösteren placeholder
 function ImagePlaceholder({ letter }) {
   return (
-    <div className="flex aspect-square items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-blue-50 text-8xl font-bold text-blue-300">
+    <div className="flex aspect-square items-center justify-center rounded-2xl bg-gradient-to-br from-red-100 to-red-50 text-8xl font-bold text-red-300">
       {letter}
     </div>
   )
@@ -163,7 +163,7 @@ function AuctionDetailPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
-      <Link to="/" className="text-sm text-blue-600 hover:underline">
+      <Link to="/" className="text-sm text-red-600 hover:underline">
         ← Ana sayfaya dön
       </Link>
 
@@ -194,7 +194,7 @@ function AuctionDetailPage() {
                   onClick={() => setSelectedImage(i)}
                   className={`aspect-square cursor-pointer rounded-xl object-cover transition-all ${
                     selectedImage === i
-                      ? 'ring-2 ring-blue-500'
+                      ? 'ring-2 ring-red-500'
                       : 'opacity-70 ring-1 ring-slate-200 hover:opacity-100'
                   }`}
                 />
@@ -208,7 +208,7 @@ function AuctionDetailPage() {
               {[0, 1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="flex aspect-square items-center justify-center rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 text-2xl font-bold text-blue-300"
+                  className="flex aspect-square items-center justify-center rounded-xl bg-gradient-to-br from-red-100 to-red-50 text-2xl font-bold text-red-300"
                 >
                   {auction.listingTitle.charAt(0)}
                 </div>
@@ -259,7 +259,7 @@ function AuctionDetailPage() {
             </p>
 
             {notice && (
-              <p className="mt-3 rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-700">{notice}</p>
+              <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{notice}</p>
             )}
 
             {isActive && user && (
@@ -272,8 +272,8 @@ function AuctionDetailPage() {
                       onClick={() => setBidAmount(String(amount))}
                       className={`flex-1 rounded-lg border px-2 py-2 text-sm font-semibold transition-colors ${
                         Number(bidAmount) === amount
-                          ? 'border-blue-600 bg-blue-50 text-blue-700'
-                          : 'border-slate-200 text-slate-700 hover:border-blue-300'
+                          ? 'border-red-600 bg-red-50 text-red-700'
+                          : 'border-slate-200 text-slate-700 hover:border-red-300'
                       }`}
                     >
                       {amount.toLocaleString('tr-TR')} TL
@@ -288,11 +288,11 @@ function AuctionDetailPage() {
                     value={bidAmount}
                     onChange={(e) => setBidAmount(e.target.value)}
                     placeholder="Teklifiniz (TL)"
-                    className="flex-1 rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                   <button
                     type="submit"
-                    className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+                    className="rounded-lg bg-red-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-red-700"
                   >
                     Teklif Ver
                   </button>
@@ -303,7 +303,7 @@ function AuctionDetailPage() {
             {isActive && !user && (
               <p className="mt-6 text-sm text-slate-500">
                 Teklif verebilmek için{' '}
-                <Link to="/giris" className="text-blue-600 underline">
+                <Link to="/giris" className="text-red-600 underline">
                   giriş yapmalısın
                 </Link>
                 .

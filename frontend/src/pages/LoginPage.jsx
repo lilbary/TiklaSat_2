@@ -40,7 +40,7 @@ function LoginPage() {
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-lg font-semibold text-slate-900">Giriş Yap</h1>
-          <Link to="/kayit" className="text-sm font-medium text-blue-600 hover:underline">
+          <Link to="/kayit" className="text-sm font-medium text-red-600 hover:underline">
             Hesap oluştur
           </Link>
         </div>
@@ -54,7 +54,7 @@ function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="E-posta adresi"
-            className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500"
           />
 
           <input
@@ -63,17 +63,17 @@ function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Şifre"
-            className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500"
           />
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2 text-slate-600">
-              <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+              <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500" />
               Beni hatırla
             </label>
-            <a href="#" className="font-medium text-blue-600 hover:underline">
+            <a href="#" className="font-medium text-red-600 hover:underline">
               Şifremi unuttum
             </a>
           </div>
@@ -84,7 +84,7 @@ function LoginPage() {
 
           <button
             type="submit"
-            className="w-full rounded-lg bg-blue-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+            className="w-full rounded-lg bg-red-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-red-700"
           >
             Giriş Yap
           </button>

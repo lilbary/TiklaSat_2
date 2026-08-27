@@ -172,7 +172,7 @@ export default function SettingsPage() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex h-10 items-center px-4 text-sm font-medium transition-colors text-left ${
                   activeTab === tab.id
-                    ? 'text-blue-600 bg-blue-50 font-semibold rounded-md'
+                    ? 'text-red-600 bg-red-50 font-semibold rounded-md'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -197,7 +197,7 @@ export default function SettingsPage() {
                         <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Profil Bilgileri</h3>
                         <p className="text-base text-slate-900 font-medium">{userProfile?.fullName || 'İsim belirtilmemiş'}</p>
                         <p className="text-sm text-slate-600 mt-1">{userProfile?.phone || 'Telefon belirtilmemiş'}</p>
-                        <button onClick={() => setIsEditingProfile(true)} className="mt-3 text-sm font-medium text-blue-600 hover:text-blue-700">
+                        <button onClick={() => setIsEditingProfile(true)} className="mt-3 text-sm font-medium text-red-600 hover:text-red-700">
                           Düzenle
                         </button>
                       </div>
@@ -207,14 +207,14 @@ export default function SettingsPage() {
                       <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-900 mb-4">Profili Düzenle</h3>
                       <div>
                         <label className="block text-sm text-slate-600 mb-1">Ad Soyad</label>
-                        <input type="text" value={editProfileForm.fullName} onChange={e => setEditProfileForm({...editProfileForm, fullName: e.target.value})} className="w-full rounded-md border border-slate-300 p-2 text-sm focus:outline-blue-500" required />
+                        <input type="text" value={editProfileForm.fullName} onChange={e => setEditProfileForm({...editProfileForm, fullName: e.target.value})} className="w-full rounded-md border border-slate-300 p-2 text-sm focus:outline-red-500" required />
                       </div>
                       <div>
                         <label className="block text-sm text-slate-600 mb-1">Telefon</label>
-                        <input type="tel" value={editProfileForm.phone} onChange={e => setEditProfileForm({...editProfileForm, phone: e.target.value})} className="w-full rounded-md border border-slate-300 p-2 text-sm focus:outline-blue-500" />
+                        <input type="tel" value={editProfileForm.phone} onChange={e => setEditProfileForm({...editProfileForm, phone: e.target.value})} className="w-full rounded-md border border-slate-300 p-2 text-sm focus:outline-red-500" />
                       </div>
                       <div className="flex gap-2">
-                        <button type="submit" className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">Kaydet</button>
+                        <button type="submit" className="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700">Kaydet</button>
                         <button type="button" onClick={() => setIsEditingProfile(false)} className="px-4 py-2 bg-slate-100 text-slate-600 text-sm rounded hover:bg-slate-200">İptal</button>
                       </div>
                     </form>
@@ -238,7 +238,7 @@ export default function SettingsPage() {
                       <div>
                         <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Şifre</h3>
                         <p className="text-base text-slate-900 font-medium">********</p>
-                        <button onClick={() => setIsEditingPassword(true)} className="mt-3 text-sm font-medium text-blue-600 hover:text-blue-700">
+                        <button onClick={() => setIsEditingPassword(true)} className="mt-3 text-sm font-medium text-red-600 hover:text-red-700">
                           Şifreyi Değiştir
                         </button>
                       </div>
@@ -248,14 +248,14 @@ export default function SettingsPage() {
                       <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-900 mb-4">Şifre Değiştir</h3>
                       <div>
                         <label className="block text-sm text-slate-600 mb-1">Mevcut Şifreniz</label>
-                        <input type="password" value={passwordForm.oldPassword} onChange={e => setPasswordForm({...passwordForm, oldPassword: e.target.value})} className="w-full rounded-md border border-slate-300 p-2 text-sm focus:outline-blue-500" required />
+                        <input type="password" value={passwordForm.oldPassword} onChange={e => setPasswordForm({...passwordForm, oldPassword: e.target.value})} className="w-full rounded-md border border-slate-300 p-2 text-sm focus:outline-red-500" required />
                       </div>
                       <div>
                         <label className="block text-sm text-slate-600 mb-1">Yeni Şifreniz</label>
-                        <input type="password" value={passwordForm.newPassword} onChange={e => setPasswordForm({...passwordForm, newPassword: e.target.value})} className="w-full rounded-md border border-slate-300 p-2 text-sm focus:outline-blue-500" required minLength="6" />
+                        <input type="password" value={passwordForm.newPassword} onChange={e => setPasswordForm({...passwordForm, newPassword: e.target.value})} className="w-full rounded-md border border-slate-300 p-2 text-sm focus:outline-red-500" required minLength="6" />
                       </div>
                       <div className="flex gap-2">
-                        <button type="submit" className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">Şifreyi Güncelle</button>
+                        <button type="submit" className="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700">Şifreyi Güncelle</button>
                         <button type="button" onClick={() => setIsEditingPassword(false)} className="px-4 py-2 bg-slate-100 text-slate-600 text-sm rounded hover:bg-slate-200">İptal</button>
                       </div>
                     </form>
@@ -271,7 +271,7 @@ export default function SettingsPage() {
               <div className="flex justify-between items-center mb-8">
                 <h2 className="text-2xl font-semibold text-slate-900">Kargo Adreslerim</h2>
                 {!isAddingAddress && (
-                  <button onClick={() => setIsAddingAddress(true)} className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 font-medium">
+                  <button onClick={() => setIsAddingAddress(true)} className="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 font-medium">
                     + Yeni Adres Ekle
                   </button>
                 )}
@@ -300,7 +300,7 @@ export default function SettingsPage() {
                     <textarea value={addressForm.fullAddress} onChange={e => setAddressForm({...addressForm, fullAddress: e.target.value})} className="w-full rounded-md border border-slate-300 p-2 text-sm" rows="3" required></textarea>
                   </div>
                   <div className="flex gap-2 pt-2">
-                    <button type="submit" className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">Kaydet</button>
+                    <button type="submit" className="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700">Kaydet</button>
                     <button type="button" onClick={() => setIsAddingAddress(false)} className="px-4 py-2 border border-slate-300 bg-white text-slate-600 text-sm rounded hover:bg-slate-50">İptal</button>
                   </div>
                 </form>
@@ -314,7 +314,7 @@ export default function SettingsPage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {addresses.map(address => (
-                    <div key={address.id} className="p-4 border border-slate-200 rounded-lg hover:border-blue-300 transition-colors bg-white shadow-sm">
+                    <div key={address.id} className="p-4 border border-slate-200 rounded-lg hover:border-red-300 transition-colors bg-white shadow-sm">
                       <div className="flex justify-between items-start mb-2">
                         <h4 className="font-semibold text-slate-900">{address.title}</h4>
                         <button onClick={() => handleDeleteAddress(address.id)} className="text-xs text-red-500 hover:text-red-700 font-medium">Sil</button>

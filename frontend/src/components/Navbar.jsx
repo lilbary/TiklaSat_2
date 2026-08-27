@@ -94,7 +94,7 @@ function Navbar() {
   return (
     // 1. DÜZELTME: sticky top-0 z-50 ile navbar'ı her zaman üstte tutuyoruz
     <nav className="sticky top-0 z-50 flex items-center gap-6 border-b border-slate-200 bg-white px-6 py-4">
-      <Link to="/" className="text-xl font-bold text-blue-600">TıklaSat</Link>
+      <Link to="/" className="text-xl font-bold text-red-600">TıklaSat</Link>
 
       <div
         className="relative"
@@ -102,7 +102,7 @@ function Navbar() {
         onMouseLeave={() => setCategoriesOpen(false)}
       >
         <button
-          className="flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-blue-600 py-2"
+          className="flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-red-600 py-2"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -122,13 +122,13 @@ function Navbar() {
                   onClick={() => handleCategoryClick(cat.id)}
                   className={`cursor-pointer px-6 py-3 text-sm font-medium transition-colors ${
                     activeCategoryId === cat.id
-                      ? 'bg-white text-blue-600 border-l-4 border-blue-600 font-bold shadow-sm'
+                      ? 'bg-white text-red-600 border-l-4 border-red-600 font-bold shadow-sm'
                       : 'text-slate-700 hover:bg-slate-100'
                   }`}
                 >
                   {cat.name}
                   {activeCategoryId === cat.id && (
-                    <span className="float-right text-blue-600">&gt;</span>
+                    <span className="float-right text-red-600">&gt;</span>
                   )}
                 </div>
               ))}
@@ -151,7 +151,7 @@ function Navbar() {
                     <div key={subCat.id} className="flex flex-col gap-2">
                       <button
                         onClick={() => handleCategoryClick(subCat.id)}
-                        className="text-left text-sm font-bold text-slate-800 hover:text-blue-600"
+                        className="text-left text-sm font-bold text-slate-800 hover:text-red-600"
                       >
                         {subCat.name}
                       </button>
@@ -170,20 +170,20 @@ function Navbar() {
         onChange={(e) => setSearchTerm(e.target.value)}
         onKeyDown={handleSearch}
         placeholder="Marka, ürün veya kategori ara..."
-        className="flex-1 rounded-md border border-slate-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        className="flex-1 rounded-md border border-slate-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
       />
 
       {user ? (
         <div className="flex items-center gap-5">
-          <Link to="/artirma-olustur" className="text-sm font-medium text-slate-700 hover:text-blue-600">
+          <Link to="/artirma-olustur" className="text-sm font-medium text-slate-700 hover:text-red-600">
             Artırma Oluştur
           </Link>
 
-          <Link to="/tekliflerim-ve-favorilerim" aria-label="Favoriler" className="text-slate-700 hover:text-blue-600">
+          <Link to="/tekliflerim-ve-favorilerim" aria-label="Favoriler" className="text-slate-700 hover:text-red-600">
             <HeartIcon />
           </Link>
 
-          <button type="button" aria-label="Bildirimler" className="text-slate-700 hover:text-blue-600">
+          <button type="button" aria-label="Bildirimler" className="text-slate-700 hover:text-red-600">
             <BellIcon />
           </button>
 
@@ -191,7 +191,7 @@ function Navbar() {
             <button
               type="button"
               onClick={() => setUserMenuOpen((v) => !v)}
-              className="flex items-center gap-1.5 text-sm font-medium text-slate-700 hover:text-blue-600"
+              className="flex items-center gap-1.5 text-sm font-medium text-slate-700 hover:text-red-600"
             >
               <UserIcon />
               <span className="max-w-[100px] truncate">{user.sub}</span>
@@ -251,10 +251,10 @@ function Navbar() {
         </div>
       ) : (
         <>
-          <Link to="/giris" className="text-sm font-medium text-slate-700 hover:text-blue-600">
+          <Link to="/giris" className="text-sm font-medium text-slate-700 hover:text-red-600">
             Giriş Yap
           </Link>
-          <Link to="/kayit" className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors">
+          <Link to="/kayit" className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors">
             Kayıt Ol
           </Link>
         </>

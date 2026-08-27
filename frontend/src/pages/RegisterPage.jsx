@@ -37,7 +37,7 @@ function RegisterPage() {
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-lg font-semibold text-slate-900">Kayıt Ol</h1>
-          <Link to="/giris" className="text-sm font-medium text-blue-600 hover:underline">
+          <Link to="/giris" className="text-sm font-medium text-red-600 hover:underline">
             Giriş yap
           </Link>
         </div>
@@ -51,7 +51,7 @@ function RegisterPage() {
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             placeholder="Ad Soyad"
-            className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500"
           />
 
           <input
@@ -60,7 +60,7 @@ function RegisterPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="E-posta adresi"
-            className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500"
           />
 
           <input
@@ -69,7 +69,7 @@ function RegisterPage() {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="Telefon"
-            className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500"
           />
 
           <input
@@ -78,7 +78,7 @@ function RegisterPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Şifre"
-            className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500"
           />
 
           {error && <p className="text-sm text-red-600">{error}</p>}
@@ -89,7 +89,7 @@ function RegisterPage() {
 
           <button
             type="submit"
-            className="w-full rounded-lg bg-blue-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+            className="w-full rounded-lg bg-red-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-red-700"
           >
             Kayıt Ol
           </button>

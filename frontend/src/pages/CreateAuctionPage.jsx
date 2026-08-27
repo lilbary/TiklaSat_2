@@ -129,7 +129,7 @@ function CreateAuctionPage() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Ürün başlığı"
-          className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
         />
 
         <textarea
@@ -138,14 +138,14 @@ function CreateAuctionPage() {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Açıklama"
           rows={4}
-          className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
         />
 
         <select
           required
           value={categoryId}
           onChange={(e) => setCategoryId(e.target.value)}
-          className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
         >
           <option value="">Kategori seç</option>
           {categories.map((c) => (
@@ -163,7 +163,7 @@ function CreateAuctionPage() {
             accept="image/*"
             multiple
             onChange={handleFileChange}
-            className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-600 hover:file:bg-blue-100"
+            className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-red-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-red-600 hover:file:bg-red-100"
           />
           {/* Fotoğraf Önizleme */}
           {previewUrls.length > 0 && (
@@ -190,7 +190,7 @@ function CreateAuctionPage() {
           value={startingPrice}
           onChange={(e) => setStartingPrice(e.target.value)}
           placeholder="Başlangıç fiyatı (TL)"
-          className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
         />
 
         {/* SÜRE VE SAAT SEÇİMİ */}
@@ -203,7 +203,7 @@ function CreateAuctionPage() {
               required
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
-              className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               <option value="1">1 Gün</option>
               <option value="3">3 Gün</option>
@@ -221,7 +221,7 @@ function CreateAuctionPage() {
               required
               value={endingHour}
               onChange={(e) => setEndingHour(e.target.value)}
-              className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               <option value="18">18:00 (Akşam Üstü)</option>
               <option value="19">19:00</option>
@@ -238,7 +238,7 @@ function CreateAuctionPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-lg bg-blue-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+          className="w-full rounded-lg bg-red-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
         >
           {submitting ? 'Oluşturuluyor...' : 'Artırmayı Başlat'}
         </button>

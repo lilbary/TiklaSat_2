@@ -20,7 +20,7 @@ function AdminUsersPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
-      <Link to="/" className="text-sm text-blue-600 hover:underline">
+      <Link to="/" className="text-sm text-red-600 hover:underline">
         ← Ana sayfaya dön
       </Link>
       <h1 className="mt-3 text-2xl font-bold text-slate-900">Kayıtlı Kullanıcılar</h1>

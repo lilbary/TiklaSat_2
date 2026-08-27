@@ -35,7 +35,7 @@ function TekliflerimVeFavorilerimPage() {
             onClick={() => setActiveTab(tab.id)}
             className={`pb-3 text-sm font-semibold ${
               activeTab === tab.id
-                ? 'border-b-2 border-blue-600 text-blue-600'
+                ? 'border-b-2 border-red-600 text-red-600'
                 : 'text-slate-500 hover:text-slate-700'
             }`}
           >
