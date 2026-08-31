@@ -49,17 +49,25 @@ function Navbar() {
   const [notificationsOpen, setNotificationsOpen] = useState(false)
 
   useEffect(() => {
-    if (!user) {
-      setNotifications([])
-      return
-    }
+  if (!user) {
+    setNotifications([])
+    return
+  }
+
+  function fetchNotifications() {
     const token = localStorage.getItem('token')
     fetch('/api/notifications/mine', {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
       .then(setNotifications)
-  }, [user])
+  }
+
+  fetchNotifications()
+  const interval = setInterval(fetchNotifications, 30000)
+
+  return () => clearInterval(interval)
+}, [user])
 
   useEffect(() => {
     fetch('/api/categories')
@@ -202,7 +210,18 @@ function Navbar() {
             <button
               type="button"
               aria-label="Bildirimler"
-              onClick={() => setNotificationsOpen((v) => !v)}
+              onClick={() => {
+                const opening = !notificationsOpen
+                setNotificationsOpen(opening)
+                if (opening) {
+                  const token = localStorage.getItem('token')
+                  fetch('/api/notifications/mark-all-read', {
+                    method: 'PUT',
+                    headers: { Authorization: `Bearer ${token}` },
+                  })
+                  setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
+                }
+              }}
               className="relative text-slate-700 hover:text-red-600"
             >
               <BellIcon />

@@ -41,4 +41,13 @@ public class NotificationService {
                 .map(NotificationDto::fromEntity)
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public void markAllAsRead(String userEmail){
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı bulunamadı!"));
+                
+        List<Notification> unread = notificationRepository.findByUserIdAndReadFalse(user.getId());
+        unread.forEach(n -> n.setRead(true));
+    }
 }

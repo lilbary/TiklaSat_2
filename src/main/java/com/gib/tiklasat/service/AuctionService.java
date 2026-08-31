@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AuctionService {
 
+    private final NotificationService notificationService;
     private final AuctionRepository auctionRepository;
     private final ListingRepository listingRepository; // İlanın var olup olmadığını kontrol etmek için lazım
     private final BidRepository bidRepository;          // Kazananı bulmak için en yüksek teklifi sorgulayacağız
@@ -107,6 +108,14 @@ public class AuctionService {
                                         auction.getId(),
                                         topBid.getBidder().getFullName(),
                                         topBid.getAmount());
+
+                                // Kazanana bildirim
+                                String winnerMessage = "'" + auction.getListing().getTitle() + "' açık artırmasını kazandınız! Kazanan teklif: " + topBid.getAmount() + " TL";
+                                notificationService.createNotification(topBid.getBidder(), auction, winnerMessage);
+
+                                // Satıcıya bildirim
+                                String sellerMessage = "'" + auction.getListing().getTitle() + "' ilanınız " + topBid.getAmount() + " TL'ye satıldı!";
+                                notificationService.createNotification(auction.getListing().getSeller(), auction, sellerMessage);
                             },
                             () -> {
                                 // Hiç teklif verilmemişse -> kazanan yok
