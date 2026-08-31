@@ -93,7 +93,7 @@ public class AuctionService {
         Instant now = Instant.now();
         
         // Veritabanından "Aktif" ama bitiş tarihi "Şu an"dan daha eski olanları bul (Süresi dolmuşlar)
-        List<Auction> expiredAuctions = auctionRepository.findByStatusAndEndTimeBefore("ACTIVE", now);
+        List<Auction> expiredAuctions = auctionRepository.findByStatusAndEndTimeBefore("PENDING", now);
         
         for (Auction auction : expiredAuctions) {
             auction.setStatus("ENDED"); // Durumunu "Bitti" olarak işaretle

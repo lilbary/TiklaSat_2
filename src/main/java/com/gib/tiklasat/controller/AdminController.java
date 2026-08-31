@@ -22,9 +22,11 @@ public class AdminController {
     }
 
     @GetMapping("/auctions/pending")
-    public ResponseEntity<List<Auction>> getPendingAuctions() {
-        // İsteğe bağlı: Auction'ı doğrudan dönmek yerine AdminPendingAuctionDto'ya çevirip dönebilirsiniz.
-        return ResponseEntity.ok(adminService.getPendingAuctions());
+    public ResponseEntity<List<com.gib.tiklasat.dto.AuctionDto>> getPendingAuctions() {
+        List<com.gib.tiklasat.dto.AuctionDto> dtos = adminService.getPendingAuctions().stream()
+            .map(auction -> com.gib.tiklasat.dto.AuctionDto.fromEntity(auction, auction.getStartingPrice()))
+            .toList();
+        return ResponseEntity.ok(dtos);
     }
 
     @PostMapping("/auctions/{id}/approve")
