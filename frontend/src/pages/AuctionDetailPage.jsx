@@ -250,7 +250,10 @@ function AuctionDetailPage() {
 
           <div className="mt-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <p className="text-xs text-slate-500">
-              İlan sahibi: <span className="font-medium text-slate-700">{auction.sellerName}</span>
+              İlan sahibi:{' '}
+              <Link to={`/profil/${auction.sellerId}`} className="font-medium text-slate-700 hover:text-red-600 hover:underline">
+                {auction.sellerName}
+              </Link>
             </p>
 
             <p className="mt-4 text-sm text-slate-500">Güncel fiyat</p>

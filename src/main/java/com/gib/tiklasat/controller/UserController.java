@@ -1,20 +1,13 @@
 package com.gib.tiklasat.controller;
 
-import com.gib.tiklasat.dto.UserDto;
-import com.gib.tiklasat.dto.UserRegisterDto;
+import com.gib.tiklasat.dto.*;
 import com.gib.tiklasat.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 
-import org.springframework.web.bind.annotation.PutMapping;
-import com.gib.tiklasat.dto.UserProfileUpdateDto;
-import com.gib.tiklasat.dto.ChangePasswordDto;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
@@ -41,4 +34,10 @@ public class UserController {
         userService.changePassword(currentUserEmail, dto);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/{id}/profile")
+    public ResponseEntity<PublicProfileDto> getPublicProfile(@PathVariable UUID id){
+        return ResponseEntity.ok(userService.getPublicProfile(id));
+    }
+
 }

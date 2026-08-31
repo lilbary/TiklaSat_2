@@ -1,11 +1,11 @@
 package com.gib.tiklasat.service;
 
-import com.gib.tiklasat.dto.UserDto;
-import com.gib.tiklasat.dto.UserRegisterDto;
+import com.gib.tiklasat.dto.*;
 import com.gib.tiklasat.exception.ResourceNotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import com.gib.tiklasat.entity.User;
 import com.gib.tiklasat.exception.ResourceNotFoundException;
@@ -13,11 +13,11 @@ import com.gib.tiklasat.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.gib.tiklasat.dto.PublicProfileDto;
 
 
 import java.lang.module.ResolutionException;
-import com.gib.tiklasat.dto.UserProfileUpdateDto;
-import com.gib.tiklasat.dto.ChangePasswordDto;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
@@ -64,5 +64,13 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
         userRepository.save(user);
     }
+
+    @Transactional(readOnly = true)
+    public PublicProfileDto getPublicProfile(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı bulunamadı"));
+        return com.gib.tiklasat.dto.PublicProfileDto.fromEntity(user);
+    }
+
 
 }

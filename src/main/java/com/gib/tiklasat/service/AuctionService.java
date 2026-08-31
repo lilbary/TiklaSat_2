@@ -146,4 +146,13 @@ public class AuctionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Açık artırma bulunamadı!"));
         return AuctionDto.fromEntity(auction, auction.getCurrentPrice());
     }
+
+    @Transactional(readOnly = true)
+    public List<AuctionDto> getAuctionsBySeller(UUID sellerId, String status) {
+        return auctionRepository.findByListingSellerIdAndStatusOrderByStartTimeDesc(sellerId, status)
+                .stream()
+                .map(a -> AuctionDto.fromEntity(a, a.getCurrentPrice()))
+                .collect(Collectors.toList());
+    }
+
 }
