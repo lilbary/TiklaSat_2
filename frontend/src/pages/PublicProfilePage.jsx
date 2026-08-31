@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { AuctionCard } from './HomePage'
+import { AuctionCard } from '../components/AuctionCard.jsx'
 
 export default function PublicProfilePage() {
   const { id } = useParams()
