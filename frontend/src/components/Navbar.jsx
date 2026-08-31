@@ -197,7 +197,7 @@ function Navbar() {
       />
 
       {user ? (
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-5 leading-none">
           <Link to="/artirma-olustur" className="text-sm font-medium text-slate-700 hover:text-red-600">
             Artırma Oluştur
           </Link>
@@ -222,7 +222,7 @@ function Navbar() {
                   setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
                 }
               }}
-              className="relative text-slate-700 hover:text-red-600"
+              className="relative mt-px text-slate-700 hover:text-red-600"
             >
               <BellIcon />
               {notifications.some((n) => !n.read) && (
