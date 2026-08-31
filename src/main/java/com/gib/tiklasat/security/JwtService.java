@@ -8,6 +8,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.gib.tiklasat.entity.User;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
@@ -36,12 +37,18 @@ public class JwtService {
     // Kullanıcıya yeni bir bilet (Token) üretme (Rollerini içine mühürleyerek)
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> extraClaims = new HashMap<>();
-        // Kullanıcının rollerini (örn: ROLE_USER, ROLE_ADMIN) al ve listeye çevir
+
+        // Kullanıcının rollerini al
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
-        extraClaims.put("roles", roles); // Biletin içine "roles" damgası vur
-        
+        extraClaims.put("roles", roles);
+
+        // Kullanıcının ID'sini (UUID) bilete ekliyoruz
+        if (userDetails instanceof User) {
+            extraClaims.put("userId", ((User) userDetails).getId());
+        }
+
         return generateToken(extraClaims, userDetails);
     }
 

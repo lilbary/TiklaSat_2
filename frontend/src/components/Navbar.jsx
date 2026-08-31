@@ -296,6 +296,15 @@ function Navbar() {
                   <p className="mt-2 border-t border-slate-100 px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                     Hesabım
                   </p>
+
+                  <Link
+                    to={`/profil/${user?.userId}`}
+                    onClick={() => setUserMenuOpen(false)}
+                    className="block w-full px-4 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    Profilim
+                  </Link>
+
                   <Link
                     to="/ayarlar"
                     onClick={() => setUserMenuOpen(false)}
