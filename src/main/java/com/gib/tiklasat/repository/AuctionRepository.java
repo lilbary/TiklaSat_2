@@ -28,7 +28,10 @@ public interface AuctionRepository extends JpaRepository<Auction, UUID> {
     
     // 3. STATÜSÜ AKTİF OLAN VE BİTİŞ TARİHİ ŞU ANDAN DAHA ESKİ OLANLARI BUL (Süresi dolmuş ama kapanmamış olanlar)
     List<Auction> findByStatusAndEndTimeBefore(String status, Instant now);
-    
+
+    // Satıcının aktif veya bitmiş açık artırmalarını bulmak için
+    List<Auction> findByListingSellerIdAndStatusOrderByStartTimeDesc(UUID sellerId, String status);
+
     // 4. Sadece aktif (veya sadece bitmiş) olan açık artırmaları bulmak için
     List<Auction> findByStatus(String status);
 

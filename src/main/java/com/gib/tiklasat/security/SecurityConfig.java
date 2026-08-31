@@ -63,6 +63,8 @@ public class SecurityConfig {
                         // 1. GİRİŞ VE KAYIT SAYFASI HERKESE AÇIK OLMALI
                         .requestMatchers("/api/auth/**").permitAll()
 
+                        .requestMatchers(HttpMethod.GET, "/api/users/*/profile").permitAll()
+
                         // 2. İLANLARA, KATEGORİLERE, AÇIK ARTIRMALARA VE TEKLİF GEÇMİŞİNE BAKMAK
                         // HERKESE AÇIK (Sadece GET istekleri)
                         .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/listings/**", "/api/auctions/**", "/api/bids/**").permitAll()

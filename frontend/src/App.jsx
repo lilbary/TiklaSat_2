@@ -9,6 +9,7 @@ import CreateAuctionPage from './pages/CreateAuctionPage'
 import SettingsPage from './pages/SettingsPage'
 import TekliflerimVeFavorilerimPage from './pages/TekliflerimVeFavorilerimPage'
 import AldigimTekliflerPage from './pages/AldigimTekliflerPage'
+import PublicProfilePage from './pages/PublicProfilePage'
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="/ayarlar" element={<SettingsPage />} />
         <Route path="/tekliflerim-ve-favorilerim" element={<TekliflerimVeFavorilerimPage />} />
         <Route path="/aldigim-teklifler" element={<AldigimTekliflerPage />} />
+        <Route path="/profil/:id" element={<PublicProfilePage />} />
       </Routes>
     </div>
   )

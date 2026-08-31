@@ -15,6 +15,7 @@ public class AuctionDto {
     private UUID listingId;
     private String listingTitle; // Ön yüzde kolaylık olsun diye ilanın başlığını da veriyoruz
     private String listingDescription;
+    private UUID sellerId;
     private String sellerName;
     private UUID categoryId;
     private String categoryName;
@@ -32,6 +33,7 @@ public class AuctionDto {
         dto.setListingId(auction.getListing().getId());
         dto.setListingTitle(auction.getListing().getTitle());
         dto.setListingDescription(auction.getListing().getDescription());
+        dto.setSellerId(auction.getListing().getSeller().getId());
         dto.setSellerName(auction.getListing().getSeller().getFullName());
         dto.setCategoryId(auction.getListing().getCategory().getId());
         dto.setCategoryName(auction.getListing().getCategory().getName());

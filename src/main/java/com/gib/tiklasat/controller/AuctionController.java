@@ -6,14 +6,9 @@ import com.gib.tiklasat.service.AuctionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
-
+import org.springframework.web.bind.annotation.PathVariable;
 import java.util.UUID;
 
 @RestController
@@ -59,5 +54,13 @@ public class AuctionController {
     ) {
         return ResponseEntity.ok(auctionService.searchAuctions(ara, kategori, page, size));
     }
-    
+
+    //satıcı ilanları getircez
+    @GetMapping("/seller/{sellerId}")
+    public ResponseEntity<java.util.List<AuctionDto>> getSellerAuctions(
+            @PathVariable UUID sellerId,
+            @RequestParam(defaultValue = "ACTIVE") String status) {
+        return ResponseEntity.ok(auctionService.getAuctionsBySeller(sellerId, status));
+    }
+
 }

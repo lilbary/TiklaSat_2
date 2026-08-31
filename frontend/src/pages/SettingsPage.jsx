@@ -328,12 +328,94 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {activeTab !== 'account' && activeTab !== 'addresses' && (
+                    {/* BİLDİRİMLER SEKMESİ */}
+          {activeTab === 'emails' && (
             <div>
-              <h2 className="mb-8 text-2xl font-semibold text-slate-900">
-                {TABS.find(t => t.id === activeTab)?.label}
-              </h2>
-              <p className="text-slate-500">Bu sayfa yapım aşamasındadır.</p>
+              <h2 className="mb-6 text-2xl font-semibold text-slate-900">Bildirim Tercihleri</h2>
+              <p className="mb-8 text-sm text-slate-500">
+                Hangi durumlarda e-posta veya SMS almak istediğinizi seçin.
+              </p>
+
+              <div className="space-y-6">
+                <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                  <div>
+                    <h4 className="font-semibold text-slate-900">Teklifim Geçildiğinde</h4>
+                    <p className="text-sm text-slate-500">Biri benim verdiğim teklifin üzerine çıkarsa haber ver.</p>
+                  </div>
+                  <label className="relative inline-flex cursor-pointer items-center">
+                    <input type="checkbox" className="peer sr-only" defaultChecked />
+                    <div className="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-red-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300"></div>
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                  <div>
+                    <h4 className="font-semibold text-slate-900">Açık Artırma Kazandığımda</h4>
+                    <p className="text-sm text-slate-500">Takip ettiğim veya katıldığım bir ürün bende kalırsa haber ver.</p>
+                  </div>
+                  <label className="relative inline-flex cursor-pointer items-center">
+                    <input type="checkbox" className="peer sr-only" defaultChecked />
+                    <div className="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-red-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300"></div>
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                  <div>
+                    <h4 className="font-semibold text-slate-900">İlanım Onaylandığında</h4>
+                    <p className="text-sm text-slate-500">Oluşturduğum yeni bir ilan yayına alındığında haber ver.</p>
+                  </div>
+                  <label className="relative inline-flex cursor-pointer items-center">
+                    <input type="checkbox" className="peer sr-only" />
+                    <div className="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-red-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300"></div>
+                  </label>
+                </div>
+              </div>
+              
+              <div className="mt-8 flex justify-end">
+                <button className="rounded-lg bg-red-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-red-700">
+                  Tercihleri Kaydet
+                </button>
+              </div>
+            </div>
+          )}
+                    {/* ÖDEME YÖNTEMLERİ SEKMESİ */}
+          {activeTab === 'payment' && (
+            <div>
+              <div className="mb-8 flex items-center justify-between">
+                <h2 className="text-2xl font-semibold text-slate-900">Kayıtlı Kartlarım</h2>
+                <button className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
+                  + Yeni Kart Ekle
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                {/* Mock Kart 1 */}
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 p-6 text-white shadow-lg transition-transform hover:-translate-y-1">
+                  <div className="absolute right-0 top-0 -mr-8 -mt-8 h-32 w-32 rounded-full bg-white opacity-5"></div>
+                  <div className="mb-8 flex items-center justify-between">
+                    <span className="font-semibold tracking-wider">Garanti Bonus</span>
+                    <svg className="h-8 w-auto text-white opacity-80" viewBox="0 0 36 24" fill="currentColor"><path d="M14.28 2.06c-6.19 0-11.2 5-11.2 11.2s5.01 11.2 11.2 11.2c2.81 0 5.37-1.04 7.34-2.76A11.16 11.16 0 0114.28 2.06z"/><path d="M22.72 2.06c-6.19 0-11.2 5-11.2 11.2s5.01 11.2 11.2 11.2c2.81 0 5.37-1.04 7.34-2.76A11.16 11.16 0 0122.72 2.06z" fillOpacity=".6"/></svg>
+                  </div>
+                  <div className="mb-2 text-xl font-medium tracking-[0.2em] opacity-90">
+                    **** **** **** 4812
+                  </div>
+                  <div className="flex justify-between text-sm opacity-70">
+                    <span>Bayram</span>
+                    <span>12/28</span>
+                  </div>
+                </div>
+
+                {/* Yeni Kart Ekleme Boş Kutusu */}
+                <div className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 text-slate-500 transition-colors hover:border-red-400 hover:bg-red-50 hover:text-red-600">
+                  <svg className="mb-2 h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="font-medium">Yeni Kredi Kartı Ekle</span>
+                </div>
+              </div>
+              <p className="mt-6 text-xs text-slate-400">
+                Kart bilgileriniz PCI-DSS standartlarında şifrelenerek saklanmaktadır. Güvenliğiniz için kart numaralarınızın tamamı sistemlerimizde tutulmaz.
+              </p>
             </div>
           )}
         </main>
