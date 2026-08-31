@@ -1,28 +1,39 @@
-import axios from 'axios';
-
 const API_URL = '/api/admin'; 
 
 const getAuthHeader = () => {
     const token = localStorage.getItem('token');
-    return { headers: { Authorization: `Bearer ${token}` } };
+    return { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    };
 };
 
 export const getDashboardStats = async () => {
-    const response = await axios.get(`${API_URL}/dashboard-stats`, getAuthHeader());
-    return response.data;
+    const response = await fetch(`${API_URL}/dashboard-stats`, { headers: getAuthHeader() });
+    if (!response.ok) throw new Error('İstatistikler çekilemedi');
+    return response.json();
 };
 
 export const getPendingAuctions = async () => {
-    const response = await axios.get(`${API_URL}/auctions/pending`, getAuthHeader());
-    return response.data;
+    const response = await fetch(`${API_URL}/auctions/pending`, { headers: getAuthHeader() });
+    if (!response.ok) throw new Error('Bekleyen ilanlar çekilemedi');
+    return response.json();
 };
 
 export const approveAuction = async (id) => {
-    const response = await axios.post(`${API_URL}/auctions/${id}/approve`, {}, getAuthHeader());
-    return response.data;
+    const response = await fetch(`${API_URL}/auctions/${id}/approve`, { 
+        method: 'POST', 
+        headers: getAuthHeader() 
+    });
+    if (!response.ok) throw new Error('Onaylama başarısız');
+    return response.text();
 };
 
 export const rejectAuction = async (id) => {
-    const response = await axios.post(`${API_URL}/auctions/${id}/reject`, {}, getAuthHeader());
-    return response.data;
+    const response = await fetch(`${API_URL}/auctions/${id}/reject`, { 
+        method: 'POST', 
+        headers: getAuthHeader() 
+    });
+    if (!response.ok) throw new Error('Reddetme başarısız');
+    return response.text();
 };
