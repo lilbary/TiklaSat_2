@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext.jsx'
-import { useFavorites } from '../context/FavoritesContext.jsx'
+import { useSearchParams } from 'react-router-dom'
+import { AuctionCard } from '../components/AuctionCard.jsx'
+import MostWantedCarousel from '../components/MostWantedCarousel.jsx'
 
 function Section({ title, children }) {
   return (
@@ -9,95 +9,6 @@ function Section({ title, children }) {
       <h2 className="mb-4 text-xl font-bold text-slate-900">{title}</h2>
       <div className="flex gap-4 overflow-x-auto pb-2">{children}</div>
     </section>
-  )
-}
-
-function Placeholder({ letter, from, to, text }) {
-  return (
-    <div
-      className={`flex h-40 items-center justify-center rounded-xl bg-gradient-to-br ${from} ${to} text-4xl font-bold ${text}`}
-    >
-      {letter}
-    </div>
-  )
-}
-
-function HeartButton({ auctionId }) {
-  const { user } = useAuth()
-  const { favoriteIds, toggleFavorite } = useFavorites()
-  const navigate = useNavigate()
-  const isFavorited = favoriteIds.has(auctionId)
-
-  function handleClick(e) {
-    e.preventDefault()
-    e.stopPropagation()
-
-    if (!user) {
-      navigate('/giris')
-      return
-    }
-    toggleFavorite(auctionId)
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      aria-label={isFavorited ? 'Favorilerden çıkar' : 'Favorilere ekle'}
-      className={`absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow ${
-        isFavorited ? 'text-rose-500' : 'text-slate-600 hover:text-rose-500'
-      }`}
-    >
-      <svg
-        viewBox="0 0 24 24"
-        className="h-5 w-5"
-        fill={isFavorited ? 'currentColor' : 'none'}
-        stroke="currentColor"
-        strokeWidth="1.5"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-        />
-      </svg>
-    </button>
-  )
-}
-
-export function AuctionCard({ auction }) {
-  const endLabel = new Date(auction.endTime).toLocaleString('tr-TR', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-
-  const hasImage = auction.imageUrls && auction.imageUrls.length > 0
-
-  return (
-    <Link to={`/artirma/${auction.id}`} className="block w-56 shrink-0">
-      <div className="relative mb-3">
-        {hasImage ? (
-          <img
-            src={auction.imageUrls[0]}
-            alt={auction.listingTitle}
-            className="h-40 w-full rounded-xl object-cover"
-          />
-        ) : (
-          <Placeholder
-            letter={auction.listingTitle.charAt(0)}
-            from="from-red-100"
-            to="to-red-50"
-            text="text-red-300"
-          />
-        )}
-        <HeartButton auctionId={auction.id} />
-      </div>
-      <p className="line-clamp-2 text-sm font-semibold text-slate-900">{auction.listingTitle}</p>
-      <p className="mt-1 text-sm text-slate-600">{auction.currentPrice.toLocaleString('tr-TR')} TL</p>
-      <p className="text-xs text-slate-400">Bitiş: {endLabel}</p>
-    </Link>
   )
 }
 
@@ -190,6 +101,8 @@ function HomePage() {
         </section>
       ) : (
         <>
+          <MostWantedCarousel />
+
           {endingToday.length > 0 && (
             <Section title="Bugün Bitecekler">
               {endingToday.map((a) => (

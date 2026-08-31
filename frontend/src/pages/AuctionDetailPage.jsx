@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
 import { useAuth } from '../context/AuthContext.jsx'
+import FavoriteHeartButton from '../components/FavoriteHeartButton.jsx'
 
 // Backend'deki BidService.calculateMinIncrement ile AYNI merdiven — burada sadece
 // "önerilen hazır teklif" butonlarını göstermek için kullanılıyor. Gerçek doğrulama
@@ -173,15 +174,21 @@ function AuctionDetailPage() {
         {/* SOL KOLON: fotoğraflar + açıklama */}
         <div>
           {/* ANA FOTOĞRAF */}
-          {hasImages ? (
-            <img
-              src={images[selectedImage]}
-              alt={auction.listingTitle}
-              className="aspect-square w-full rounded-2xl object-cover"
+          <div className="relative">
+            {hasImages ? (
+              <img
+                src={images[selectedImage]}
+                alt={auction.listingTitle}
+                className="aspect-square w-full rounded-2xl object-cover"
+              />
+            ) : (
+              <ImagePlaceholder letter={auction.listingTitle.charAt(0)} />
+            )}
+            <FavoriteHeartButton
+              auctionId={auction.id}
+              className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow"
             />
-          ) : (
-            <ImagePlaceholder letter={auction.listingTitle.charAt(0)} />
-          )}
+          </div>
 
           {/* KÜÇÜK FOTOĞRAF GALERİSİ */}
           {hasImages && images.length > 1 && (

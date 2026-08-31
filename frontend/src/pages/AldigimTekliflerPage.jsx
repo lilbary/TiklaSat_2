@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { AuctionCard } from './HomePage.jsx'
+import { AuctionCard } from '../components/AuctionCard.jsx'
 
 function AldigimTekliflerPage() {
   const [receivedBids, setReceivedBids] = useState([])

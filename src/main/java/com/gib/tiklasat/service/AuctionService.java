@@ -147,6 +147,14 @@ public class AuctionService {
                 .collect(Collectors.toList());
     }
 
+    // EN ÇOK FAVORİLENEN AÇIK ARTIRMALAR — "Most Wanted" bölümü için
+    @Transactional(readOnly = true)
+    public List<AuctionDto> getMostFavorited(int limit) {
+        return auctionRepository.findMostFavorited(limit).stream()
+                .map(a -> AuctionDto.fromEntity(a, a.getCurrentPrice()))
+                .collect(Collectors.toList());
+    }
+
     // TEK BİR AÇIK ARTIRMANIN DETAYINI GETİR
     @Transactional(readOnly = true)
     @Cacheable(value = "auction_by_id", key = "#id")
