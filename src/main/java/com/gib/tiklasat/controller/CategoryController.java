@@ -21,6 +21,11 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.getRootCategories());
     }
 
+    @GetMapping("/by-slugs")
+    public ResponseEntity<List<CategoryDto>> getCategoriesBySlugs(@RequestParam List<String> slugs) {
+        return ResponseEntity.ok(categoryService.getCategoriesBySlugs(slugs));
+    }
+
     @GetMapping("/{parentId}/subcategories")
     public ResponseEntity<List<CategoryDto>> getSubCategories(@PathVariable UUID parentId) {
         return ResponseEntity.ok(categoryService.getSubCategories(parentId));

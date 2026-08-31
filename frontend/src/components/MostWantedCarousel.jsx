@@ -144,7 +144,7 @@ function MostWantedCarousel() {
         }`}
       >
         {items.map((auction) => (
-          <AuctionCard key={auction.id} auction={auction} />
+          <AuctionCard key={auction.id} auction={auction} fullWidth />
         ))}
       </div>
     </section>

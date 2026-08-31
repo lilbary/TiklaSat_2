@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 public class RateLimitFilter extends OncePerRequestFilter {
 
     private final StringRedisTemplate redisTemplate;
-    private static final int MAX_REQUESTS_PER_SECOND = 10; // Saniyede maksimum istek hakkı
+    private static final int MAX_REQUESTS_PER_SECOND = 50; // Saniyede maksimum istek hakkı
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { AuctionCard } from '../components/AuctionCard.jsx'
 import MostWantedCarousel from '../components/MostWantedCarousel.jsx'
+import WeeklyCategoryHighlights from '../components/WeeklyCategoryHighlights.jsx'
 
 function Section({ title, children }) {
   return (
@@ -102,6 +103,7 @@ function HomePage() {
       ) : (
         <>
           <MostWantedCarousel />
+          <WeeklyCategoryHighlights />
 
           {endingToday.length > 0 && (
             <Section title="Bugün Bitecekler">

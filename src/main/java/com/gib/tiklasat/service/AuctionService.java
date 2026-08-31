@@ -149,8 +149,8 @@ public class AuctionService {
 
     // EN ÇOK FAVORİLENEN AÇIK ARTIRMALAR — "Most Wanted" bölümü için
     @Transactional(readOnly = true)
-    public List<AuctionDto> getMostFavorited(int limit) {
-        return auctionRepository.findMostFavorited(limit).stream()
+    public List<AuctionDto> getMostFavorited(int limit, UUID categoryId) {
+        return auctionRepository.findMostFavorited(limit, categoryId).stream()
                 .map(a -> AuctionDto.fromEntity(a, a.getCurrentPrice()))
                 .collect(Collectors.toList());
     }

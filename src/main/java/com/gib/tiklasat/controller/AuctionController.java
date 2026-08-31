@@ -40,8 +40,10 @@ public class AuctionController {
 
     // EN ÇOK FAVORİLENEN AÇIK ARTIRMALAR — "Most Wanted" bölümü için
     @GetMapping("/most-favorited")
-    public ResponseEntity<java.util.List<AuctionDto>> getMostFavorited(@RequestParam(defaultValue = "4") int limit) {
-        return ResponseEntity.ok(auctionService.getMostFavorited(limit));
+    public ResponseEntity<java.util.List<AuctionDto>> getMostFavorited(
+            @RequestParam(defaultValue = "4") int limit,
+            @RequestParam(required = false) UUID categoryId) {
+        return ResponseEntity.ok(auctionService.getMostFavorited(limit, categoryId));
     }
 
     // ARAMA + KATEGORİ FİLTRESİ + SAYFALAMA

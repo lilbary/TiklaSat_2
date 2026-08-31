@@ -60,16 +60,19 @@ public interface AuctionRepository extends JpaRepository<Auction, UUID> {
     );
 
     // 5. EN ÇOK FAVORİLENEN aktif açık artırmalar — "Most Wanted" bölümü için
+    // categoryId verilirse sadece o kategoriyle sınırlar (Haftanın Kategorileri bölümü için)
     @Query(
         value = """
                 SELECT a.* FROM auctions a
+                JOIN listings l ON a.listing_id = l.id
                 LEFT JOIN favorites f ON f.auction_id = a.id
                 WHERE a.status = 'ACTIVE' AND a.ends_at > now()
+                AND (:categoryId IS NULL OR l.category_id = :categoryId)
                 GROUP BY a.id
                 ORDER BY count(f.id) DESC, a.ends_at ASC
                 LIMIT :limit
                 """,
         nativeQuery = true
     )
-    List<Auction> findMostFavorited(@Param("limit") int limit);
+    List<Auction> findMostFavorited(@Param("limit") int limit, @Param("categoryId") UUID categoryId);
 }

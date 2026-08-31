@@ -28,6 +28,16 @@ public class CategoryService {
                 .collect(Collectors.toList());
     }
 
+    // Sabit slug listesinden kategori bulma — "Haftanın Kategorileri" gibi bölümlerde
+    // kategori ID'sini sabit kodlamak yerine (veritabanı sıfırlanınca değişir), kalıcı
+    // slug üzerinden aramak için.
+    @Transactional(readOnly = true)
+    public List<CategoryDto> getCategoriesBySlugs(List<String> slugs) {
+        return categoryRepository.findBySlugIn(slugs).stream()
+                .map(CategoryDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
     @Transactional(readOnly = true)
     public List<CategoryDto> getSubCategories(UUID parentId) {
         return categoryRepository.findByParentId(parentId).stream()
