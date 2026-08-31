@@ -38,6 +38,7 @@ public class BidService {
     private final UserRepository userRepository;
     private final OutboxEventRepository outboxEventRepository; // Outbox Tablosu
     private final ObjectMapper objectMapper; // JSON Çevirici
+    private final NotificationService notificationService;
 
     // TEKLİF VERME (PLACE BID) METODU
     @Transactional
@@ -92,6 +93,13 @@ public class BidService {
         bid = bidRepository.saveAndFlush(bid);
 
         auction.setCurrentPrice(amount);
+
+        // Önceki en yüksek teklifi veren kişiye "geçildin" bildirimi gönder
+        if (!existingBids.isEmpty() && !existingBids.get(0).getBidder().getId().equals(bidder.getId())) {
+            User outbidUser = existingBids.get(0).getBidder();
+            String message = "'" + auction.getListing().getTitle() + "' için teklifiniz geçildi! Yeni fiyat: " + amount + " TL";
+            notificationService.createNotification(outbidUser, auction, message);
+        }
 
         Instant now = Instant.now();
         Instant sniperWindow = auction.getEndTime().minus(Duration.ofSeconds(120));
