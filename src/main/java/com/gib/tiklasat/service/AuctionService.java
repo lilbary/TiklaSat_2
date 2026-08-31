@@ -72,7 +72,7 @@ public class AuctionService {
         auction.setCurrentPrice(startingPrice);
         auction.setStartTime(Instant.now()); // Başlangıç zamanı ŞU AN.
         auction.setEndTime(endTime);
-        auction.setStatus("ACTIVE");
+        auction.setStatus("PENDING"); 
         auction.setOriginalEndsAt(endTime);  // ← bunu ekle
 
         // Veritabanına kaydet
@@ -93,7 +93,7 @@ public class AuctionService {
         Instant now = Instant.now();
         
         // Veritabanından "Aktif" ama bitiş tarihi "Şu an"dan daha eski olanları bul (Süresi dolmuşlar)
-        List<Auction> expiredAuctions = auctionRepository.findByStatusAndEndTimeBefore("PENDING", now);
+        List<Auction> expiredAuctions = auctionRepository.findByStatusAndEndTimeBefore("ACTIVE", now);
         
         for (Auction auction : expiredAuctions) {
             auction.setStatus("ENDED"); // Durumunu "Bitti" olarak işaretle
