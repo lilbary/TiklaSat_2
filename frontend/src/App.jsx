@@ -9,6 +9,8 @@ import CreateAuctionPage from './pages/CreateAuctionPage'
 import SettingsPage from './pages/SettingsPage'
 import TekliflerimVeFavorilerimPage from './pages/TekliflerimVeFavorilerimPage'
 import AldigimTekliflerPage from './pages/AldigimTekliflerPage'
+import AdminDashboardPage from './pages/admin/AdminDashboardPage'
+import AdminModerationPage from './pages/admin/AdminModerationPage'
 import PublicProfilePage from './pages/PublicProfilePage'
 
 function App() {
@@ -21,6 +23,8 @@ function App() {
         <Route path="/kayit" element={<RegisterPage />} />
         <Route path="/artirma/:id" element={<AuctionDetailPage />} />
         <Route path="/admin/kullanicilar" element={<AdminUsersPage />} />
+        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+        <Route path="/admin/moderation" element={<AdminModerationPage />} />
         <Route path="/artirma-olustur" element={<CreateAuctionPage />} />
         <Route path="/ayarlar" element={<SettingsPage />} />
         <Route path="/tekliflerim-ve-favorilerim" element={<TekliflerimVeFavorilerimPage />} />

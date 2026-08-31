@@ -75,4 +75,10 @@ public interface AuctionRepository extends JpaRepository<Auction, UUID> {
         nativeQuery = true
     )
     List<Auction> findMostFavorited(@Param("limit") int limit, @Param("categoryId") UUID categoryId);
+
+    // İlan sayısını statüye göre getirmek için
+    long countByStatus(String status);
+
+    // Onay bekleyenleri veya statüye göre listelemek için
+    List<Auction> findByStatus(String status);
 }

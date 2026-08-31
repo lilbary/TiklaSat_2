@@ -2,6 +2,7 @@ package com.gib.tiklasat.repository;
 
 import com.gib.tiklasat.entity.Bid;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -29,4 +30,8 @@ public interface BidRepository extends JpaRepository<Bid, UUID> {
 
     // 4. Benim (satıcının) ilanlarına verilmiş TÜM teklifler — "Aldığım Teklifler" sayfası için
     List<Bid> findByAuctionListingSellerId(UUID sellerId);
+
+    @Query("SELECT COUNT(b) FROM Bid b WHERE DATE(b.createdAt) = CURRENT_DATE")
+    long countDailyBids();
+
 }

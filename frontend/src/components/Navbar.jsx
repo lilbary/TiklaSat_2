@@ -297,6 +297,16 @@ function Navbar() {
                     Hesabım
                   </p>
 
+                  {user?.roles?.includes('ROLE_ADMIN') && (
+                    <Link
+                      to="/admin/dashboard"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="block w-full px-4 py-2 text-left text-sm font-bold text-red-600 hover:bg-slate-50"
+                    >
+                      Admin Paneli
+                    </Link>
+                  )}
+
                   <Link
                     to={`/profil/${user?.userId}`}
                     onClick={() => setUserMenuOpen(false)}
