@@ -45,6 +45,29 @@ function Navbar() {
   const [subCategories, setSubCategories] = useState({}) // Cache for subcategories
   const [activeCategoryId, setActiveCategoryId] = useState(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [notifications, setNotifications] = useState([])
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+
+  useEffect(() => {
+  if (!user) {
+    setNotifications([])
+    return
+  }
+
+  function fetchNotifications() {
+    const token = localStorage.getItem('token')
+    fetch('/api/notifications/mine', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then(setNotifications)
+  }
+
+  fetchNotifications()
+  const interval = setInterval(fetchNotifications, 30000)
+
+  return () => clearInterval(interval)
+}, [user])
 
   useEffect(() => {
     fetch('/api/categories')
@@ -183,9 +206,59 @@ function Navbar() {
             <HeartIcon />
           </Link>
 
-          <button type="button" aria-label="Bildirimler" className="text-slate-700 hover:text-red-600">
-            <BellIcon />
-          </button>
+          <div className="relative">
+            <button
+              type="button"
+              aria-label="Bildirimler"
+              onClick={() => {
+                const opening = !notificationsOpen
+                setNotificationsOpen(opening)
+                if (opening) {
+                  const token = localStorage.getItem('token')
+                  fetch('/api/notifications/mark-all-read', {
+                    method: 'PUT',
+                    headers: { Authorization: `Bearer ${token}` },
+                  })
+                  setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
+                }
+              }}
+              className="relative text-slate-700 hover:text-red-600"
+            >
+              <BellIcon />
+              {notifications.some((n) => !n.read) && (
+                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
+                  {notifications.filter((n) => !n.read).length}
+                </span>
+              )}
+            </button>
+
+            {notificationsOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setNotificationsOpen(false)} />
+                <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-lg bg-white py-2 shadow-lg ring-1 ring-slate-200">
+                  <p className="px-4 pb-2 pt-1 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Bildirimler
+                  </p>
+                  {notifications.length === 0 ? (
+                    <p className="px-4 py-4 text-sm text-slate-500">Henüz bildirimin yok.</p>
+                  ) : (
+                    notifications.map((n) => (
+                      <Link
+                        key={n.id}
+                        to={`/artirma/${n.auctionId}`}
+                        onClick={() => setNotificationsOpen(false)}
+                        className={`block px-4 py-3 text-sm hover:bg-slate-50 ${
+                          n.read ? 'text-slate-500' : 'font-medium text-slate-900'
+                        }`}
+                      >
+                        {n.message}
+                      </Link>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
+          </div>
 
           <div className="relative">
             <button
