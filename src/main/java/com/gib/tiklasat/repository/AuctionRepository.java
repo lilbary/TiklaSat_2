@@ -78,7 +78,4 @@ public interface AuctionRepository extends JpaRepository<Auction, UUID> {
 
     // İlan sayısını statüye göre getirmek için
     long countByStatus(String status);
-
-    // Onay bekleyenleri veya statüye göre listelemek için
-    List<Auction> findByStatus(String status);
 }

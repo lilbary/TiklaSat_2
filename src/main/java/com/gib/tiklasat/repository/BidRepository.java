@@ -31,7 +31,6 @@ public interface BidRepository extends JpaRepository<Bid, UUID> {
     // 4. Benim (satıcının) ilanlarına verilmiş TÜM teklifler — "Aldığım Teklifler" sayfası için
     List<Bid> findByAuctionListingSellerId(UUID sellerId);
 
-    @Query("SELECT COUNT(b) FROM Bid b WHERE DATE(b.createdAt) = CURRENT_DATE")
+    @Query(value = "SELECT COUNT(*) FROM bids WHERE DATE(created_at) = CURRENT_DATE", nativeQuery = true)
     long countDailyBids();
-
 }

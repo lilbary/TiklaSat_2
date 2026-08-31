@@ -342,14 +342,14 @@ function Navbar() {
           </div>
         </div>
       ) : (
-        <>
+        <div className="flex items-center gap-4 whitespace-nowrap">
           <Link to="/giris" className="text-sm font-medium text-slate-700 hover:text-red-600">
             Giriş Yap
           </Link>
           <Link to="/kayit" className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors">
             Kayıt Ol
           </Link>
-        </>
+        </div>
       )}
     </nav>
   )
