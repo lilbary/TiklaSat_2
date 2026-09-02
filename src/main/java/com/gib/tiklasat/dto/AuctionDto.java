@@ -21,7 +21,8 @@ public class AuctionDto {
     private String categoryName;
     private String winnerName;
     private BigDecimal startingPrice; // SABİT — asla değişmez
-    private BigDecimal currentPrice;  // DEĞİŞKEN — en yüksek teklif (yoksa startingPrice)
+    private BigDecimal currentPrice;
+    private Boolean reserveMet; 
     private Instant startTime;
     private Instant endTime;
     private String status;
@@ -40,6 +41,9 @@ public class AuctionDto {
         dto.setWinnerName(auction.getWinner() != null ? auction.getWinner().getFullName() : null);
         dto.setStartingPrice(auction.getStartingPrice());
         dto.setCurrentPrice(currentPrice);
+        dto.setReserveMet(auction.getReservePrice() == null
+                ? null
+                : currentPrice.compareTo(auction.getReservePrice()) >= 0);
         dto.setStartTime(auction.getStartTime());
         dto.setEndTime(auction.getEndTime());
         dto.setStatus(auction.getStatus());

@@ -33,6 +33,12 @@ public class Auction {
     @Column(name = "current_price", nullable = false, precision = 15, scale = 2)
     private BigDecimal currentPrice;
 
+    @Column(name = "ending_soon_notified", nullable = false)
+    private boolean endingSoonNotified = false;
+
+    @Column(name = "reserve_price", precision = 15, scale = 2)
+    private BigDecimal reservePrice;
+
     // Açık Artırma Başlangıç Zamanı — DB kolonu "starts_at" (migration V4)
     @Column(name = "starts_at", nullable = false)
     private Instant startTime;

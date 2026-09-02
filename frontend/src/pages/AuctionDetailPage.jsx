@@ -245,7 +245,11 @@ function AuctionDetailPage() {
           ) : (
             <div className="rounded-xl bg-slate-100 p-4">
               <p className="text-sm font-semibold text-red-500">Bu açık artırma sona erdi.</p>
-              {auction.winnerName ? (
+              {auction.status === 'RESERVE_NOT_MET' ? (
+                <p className="mt-1 text-sm text-slate-500">
+                  En yüksek teklif, satıcının belirlediği rezerv fiyata ulaşamadığı için satış gerçekleşmedi.
+                </p>
+              ) : auction.winnerName ? (
                 <p className="mt-1 text-sm text-slate-700">
                   Kazanan: <span className="font-semibold">{auction.winnerName}</span>
                 </p>
@@ -267,6 +271,12 @@ function AuctionDetailPage() {
             <p className="text-3xl font-bold text-slate-900">
               {currentPrice.toLocaleString('tr-TR')} TL
             </p>
+            {auction.reserveMet === true && (
+              <p className="mt-1 text-sm font-medium text-green-600">Rezerv fiyata ulaşıldı</p>
+            )}
+            {auction.reserveMet === false && (
+              <p className="mt-1 text-sm text-slate-500">Rezerv fiyata ulaşılmadı</p>
+            )}
 
             {notice && (
               <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{notice}</p>

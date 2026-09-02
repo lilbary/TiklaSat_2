@@ -2,12 +2,14 @@ package com.gib.tiklasat.service;
 
 import com.gib.tiklasat.dto.AuctionDto;
 import com.gib.tiklasat.entity.Auction;
+import com.gib.tiklasat.entity.Favorite;
 import com.gib.tiklasat.entity.Listing;
 import com.gib.tiklasat.exception.ConflictException;
 import com.gib.tiklasat.exception.ForbiddenActionException;
 import com.gib.tiklasat.exception.ResourceNotFoundException;
 import com.gib.tiklasat.repository.AuctionRepository;
 import com.gib.tiklasat.repository.BidRepository;
+import com.gib.tiklasat.repository.FavoriteRepository;
 import com.gib.tiklasat.repository.ListingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +22,7 @@ import java.time.Duration;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-
+import com.gib.tiklasat.repository.FavoriteRepository;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -37,11 +39,12 @@ public class AuctionService {
     private final AuctionRepository auctionRepository;
     private final ListingRepository listingRepository; // İlanın var olup olmadığını kontrol etmek için lazım
     private final BidRepository bidRepository;          // Kazananı bulmak için en yüksek teklifi sorgulayacağız
+    private final FavoriteRepository favoriteRepository;
 
     // YENİ BİR AÇIK ARTIRMA BAŞLATMA METODU
     @Transactional
     @CacheEvict(value = {"auctions_all", "auction_by_id"}, allEntries = true)
-    public AuctionDto createAuction(UUID listingId, BigDecimal startingPrice, Instant endTime, String sellerEmail) {
+    public AuctionDto createAuction(UUID listingId, BigDecimal startingPrice, Instant endTime, BigDecimal reservePrice, String sellerEmail) {
 
         Listing listing = listingRepository.findById(listingId)
             .orElseThrow(() -> new ResourceNotFoundException("İlan bulunamadı!"));
@@ -65,6 +68,10 @@ public class AuctionService {
             throw new RuntimeException("Bitiş tarihi geçmiş bir zaman olamaz!");
         }
 
+        if (reservePrice != null && reservePrice.compareTo(startingPrice) < 0) {
+        throw new RuntimeException("Rezerv fiyat, başlangıç fiyatından düşük olamaz!");
+        }
+
         // Tüm kuralları geçtiyse boş bir Açık Artırma (Entity) oluştur ve verileri doldur
         Auction auction = new Auction();
         auction.setListing(listing);
@@ -73,7 +80,8 @@ public class AuctionService {
         auction.setStartTime(Instant.now()); // Başlangıç zamanı ŞU AN.
         auction.setEndTime(endTime);
         auction.setStatus("ACTIVE");
-        auction.setOriginalEndsAt(endTime);  // ← bunu ekle
+        auction.setOriginalEndsAt(endTime);
+        auction.setReservePrice(reservePrice); 
 
         // Veritabanına kaydet
         auction = auctionRepository.save(auction);
@@ -95,30 +103,46 @@ public class AuctionService {
         // Veritabanından "Aktif" ama bitiş tarihi "Şu an"dan daha eski olanları bul (Süresi dolmuşlar)
         List<Auction> expiredAuctions = auctionRepository.findByStatusAndEndTimeBefore("ACTIVE", now);
         
-        for (Auction auction : expiredAuctions) {
-            auction.setStatus("ENDED"); // Durumunu "Bitti" olarak işaretle
-
+                for (Auction auction : expiredAuctions) {
             // KAZANANI BELİRLE: Bu ihaleye verilmiş en yüksek teklifi bul
             bidRepository.findTopByAuctionIdOrderByAmountDesc(auction.getId())
                     .ifPresentOrElse(
                             topBid -> {
-                                // Teklif varsa -> kazanan = en yüksek teklifi veren kişi
-                                auction.setWinner(topBid.getBidder());
-                                log.info("KAZANAN - Açık Artırma {} kazananı: {} (Tutar: {} TL)",
-                                        auction.getId(),
-                                        topBid.getBidder().getFullName(),
-                                        topBid.getAmount());
+                                boolean reserveMet = auction.getReservePrice() == null
+                                        || topBid.getAmount().compareTo(auction.getReservePrice()) >= 0;
 
-                                // Kazanana bildirim
-                                String winnerMessage = "'" + auction.getListing().getTitle() + "' açık artırmasını kazandınız! Kazanan teklif: " + topBid.getAmount() + " TL";
-                                notificationService.createNotification(topBid.getBidder(), auction, winnerMessage);
+                                if (reserveMet) {
+                                    // Teklif rezervi karşılıyor (ya da rezerv hiç yok) -> satış gerçekleşir
+                                    auction.setStatus("ENDED");
+                                    auction.setWinner(topBid.getBidder());
+                                    log.info("KAZANAN - Açık Artırma {} kazananı: {} (Tutar: {} TL)",
+                                            auction.getId(),
+                                            topBid.getBidder().getFullName(),
+                                            topBid.getAmount());
 
-                                // Satıcıya bildirim
-                                String sellerMessage = "'" + auction.getListing().getTitle() + "' ilanınız " + topBid.getAmount() + " TL'ye satıldı!";
-                                notificationService.createNotification(auction.getListing().getSeller(), auction, sellerMessage);
+                                    String winnerMessage = "'" + auction.getListing().getTitle() + "' açık artırmasını kazandınız! Kazanan teklif: " + topBid.getAmount() + " TL";
+                                    notificationService.createNotification(topBid.getBidder(), auction, winnerMessage);
+
+                                    String sellerMessage = "'" + auction.getListing().getTitle() + "' ilanınız " + topBid.getAmount() + " TL'ye satıldı!";
+                                    notificationService.createNotification(auction.getListing().getSeller(), auction, sellerMessage);
+                                } else {
+                                    // En yüksek teklif rezervin ALTINDA -> satış gerçekleşmez
+                                    auction.setStatus("RESERVE_NOT_MET");
+                                    log.info("REZERV KARŞILANMADI - Açık Artırma {} (En yüksek teklif: {} TL, Rezerv: {} TL)",
+                                            auction.getId(),
+                                            topBid.getAmount(),
+                                            auction.getReservePrice());
+
+                                    String bidderMessage = "'" + auction.getListing().getTitle() + "' açık artırmasında en yüksek teklif sizindi, ama satıcının belirlediği minimum fiyata ulaşılamadığı için satış gerçekleşmedi.";
+                                    notificationService.createNotification(topBid.getBidder(), auction, bidderMessage);
+
+                                    String sellerMessage = "'" + auction.getListing().getTitle() + "' ilanınız için en yüksek teklif, belirlediğiniz rezerv fiyatın altında kaldı. Satış gerçekleşmedi.";
+                                    notificationService.createNotification(auction.getListing().getSeller(), auction, sellerMessage);
+                                }
                             },
                             () -> {
-                                // Hiç teklif verilmemişse -> kazanan yok
+                                // Hiç teklif verilmemişse -> kazanan yok, rezerv zaten konu değil
+                                auction.setStatus("ENDED");
                                 log.info("UYARI - Açık Artırma {} teklif almadan kapandı.",
                                         auction.getId());
                             }
@@ -172,4 +196,24 @@ public class AuctionService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    @Scheduled(fixedRate = 60000) // Her 1 dakikada bir — hassasiyet gerekmiyor
+    @net.javacrumbs.shedlock.spring.annotation.SchedulerLock(name = "notifyEndingSoonTask", lockAtLeastFor = "PT5S", lockAtMostFor = "PT50S")
+    public void notifyFavoritedAuctionsEndingSoon() {
+        Instant now = Instant.now();
+        Instant in1Hour = now.plus(Duration.ofHours(1));
+
+        List<Auction> endingSoon = auctionRepository
+                .findByStatusAndEndingSoonNotifiedFalseAndEndTimeBetween("ACTIVE", now, in1Hour);
+
+        for (Auction auction : endingSoon) {
+            List<Favorite> favorites = favoriteRepository.findByAuctionId(auction.getId());
+            String message = "Favorilediğin '" + auction.getListing().getTitle() + "' açık artırmasının süresi 1 saatten az kaldı!";
+            for (Favorite favorite : favorites) {
+                notificationService.createNotification(favorite.getUser(), auction, message);
+            }
+            auction.setEndingSoonNotified(true);
+            auctionRepository.save(auction);
+        }
+    }
 }

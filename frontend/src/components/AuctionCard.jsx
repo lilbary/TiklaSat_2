@@ -15,7 +15,10 @@ function Placeholder({ letter, from, to, text }) {
 // eşit kenar boşluğu için — MostWantedCarousel gibi sabit sayıda kart gösteren
 // grid'lerde kullanılır). false (varsayılan) → yatay kaydırmalı Section listelerinde
 // gereken sabit genişlik korunur.
-export function AuctionCard({ auction, fullWidth = false }) {
+// actionSlot: metin bloğunun sağına, dikey ortalanmış şekilde yerleştirilen opsiyonel
+// bir eleman (örn. PublicProfilePage'deki "..." ilan yönetim menüsü). Verilmezse
+// metin bloğu tüm genişliği kaplar, görünüm eskisiyle birebir aynı kalır.
+export function AuctionCard({ auction, fullWidth = false, actionSlot = null }) {
   const endLabel = new Date(auction.endTime).toLocaleString('tr-TR', {
     day: '2-digit',
     month: 'short',
@@ -47,9 +50,14 @@ export function AuctionCard({ auction, fullWidth = false }) {
           className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow"
         />
       </div>
-      <p className="line-clamp-2 text-sm font-semibold text-slate-900">{auction.listingTitle}</p>
-      <p className="mt-1 text-sm text-slate-600">{auction.currentPrice.toLocaleString('tr-TR')} TL</p>
-      <p className="text-xs text-slate-400">Bitiş: {endLabel}</p>
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="line-clamp-2 text-sm font-semibold text-slate-900">{auction.listingTitle}</p>
+          <p className="mt-1 text-sm text-slate-600">{auction.currentPrice.toLocaleString('tr-TR')} TL</p>
+          <p className="text-xs text-slate-400">Bitiş: {endLabel}</p>
+        </div>
+        {actionSlot}
+      </div>
     </Link>
   )
 }

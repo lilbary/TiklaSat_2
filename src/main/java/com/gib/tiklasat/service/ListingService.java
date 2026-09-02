@@ -1,5 +1,10 @@
 package com.gib.tiklasat.service;
 
+import com.gib.tiklasat.entity.Auction;
+import com.gib.tiklasat.exception.ConflictException;
+import com.gib.tiklasat.exception.ForbiddenActionException;
+import com.gib.tiklasat.repository.AuctionRepository;
+import com.gib.tiklasat.repository.BidRepository;
 import com.gib.tiklasat.dto.ListingDto;
 import com.gib.tiklasat.entity.Category;
 import com.gib.tiklasat.entity.Listing;
@@ -17,7 +22,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 
+import java.util.Optional;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -29,6 +37,9 @@ public class ListingService {
     private final ListingRepository listingRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final AuctionRepository auctionRepository;
+    private final BidRepository bidRepository;
+    private final CacheManager cacheManager;
 
     // NOT: Burası @Cacheable OLAMAZ — Page (PageImpl) Redis'e yazılabiliyor ama
     // geri okunurken Jackson'ın kurabileceği bir constructor'ı olmadığı için
@@ -62,5 +73,60 @@ public class ListingService {
         listing = listingRepository.save(listing);
         return ListingDto.fromEntity(listing);
     }
+    /*
+    @Transactional
+    @CacheEvict(value = "listings_by_category", allEntries = true)
+    public void deleteListing(UUID listingId, String sellerEmail) {
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new ResourceNotFoundException("İlan bulunamadı"));
 
+        if (!listing.getSeller().getEmail().equals(sellerEmail)) {
+            throw new ForbiddenActionException("Bu ilan size ait değil, silemezsiniz!");
+        }
+
+        Optional<Auction> auctionOpt = auctionRepository.findByListingId(listingId);
+        if (auctionOpt.isPresent()) {
+            Auction auction = auctionOpt.get();
+            if (bidRepository.existsByAuctionId(auction.getId())) {
+                throw new ConflictException("Bu açık artırmaya teklif verilmiş, silemezsiniz!");
+            }
+            auction.setStatus("CANCELLED");
+            auctionRepository.save(auction);
+        }
+
+        listing.setStatus("DELETED");
+        listingRepository.save(listing);
+
+
+    }*/
+    
+    @Transactional
+    public void deleteListing(UUID listingId, String sellerEmail) {
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new ResourceNotFoundException("İlan bulunamadı"));
+
+        if (!listing.getSeller().getEmail().equals(sellerEmail)) {
+            throw new ForbiddenActionException("Bu ilan size ait değil, silemezsiniz!");
+        }
+
+        Optional<Auction> auctionOpt = auctionRepository.findByListingId(listingId);
+        if (auctionOpt.isPresent()) {
+            Auction auction = auctionOpt.get();
+            if (bidRepository.existsByAuctionId(auction.getId())) {
+                throw new ConflictException("Bu açık artırmaya teklif verilmiş, silemezsiniz!");
+            }
+            auction.setStatus("CANCELLED");
+            auctionRepository.save(auction);
+        }
+
+        listing.setStatus("DELETED");
+        listingRepository.save(listing);
+
+        // Sadece bu ilanın kategorisinin önbelleğini temizle — diğer kategoriler sıcak kalır
+        UUID categoryId = listing.getCategory().getId();
+        Cache cache = cacheManager.getCache("listings_by_category");
+        if (cache != null) {
+            cache.evict(categoryId);
+        }
+    }
 }

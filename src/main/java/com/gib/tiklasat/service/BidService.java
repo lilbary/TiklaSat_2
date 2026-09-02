@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -108,9 +109,18 @@ public class BidService {
             auction.setEndTime(newEnd);
             auction.setExtensionCount(auction.getExtensionCount() + 1);
             auctionRepository.save(auction);
+
+            // Önceden teklif vermiş herkese (şu anki teklifi verenin kendisi hariç) haber ver
+            Set<User> previousBidders = existingBids.stream()
+                    .map(Bid::getBidder)
+                    .filter(u -> !u.getId().equals(bidder.getId()))
+                    .collect(Collectors.toSet());
+
+            String extensionMessage = "'" + auction.getListing().getTitle() + "' açık artırmasının süresi son dakika teklifiyle uzadı!";
+            for (User previousBidder : previousBidders) {
+                notificationService.createNotification(previousBidder, auction, extensionMessage);
+            }
         }
-
-
 
         // Outbox Pattern: WebSocket'e hemen haber verme, Outbox (Giden Kutusu) tablosuna not bırak.
         BidDto result = BidDto.fromEntity(bid);

@@ -9,6 +9,7 @@ function CreateAuctionPage() {
   const [description, setDescription] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [startingPrice, setStartingPrice] = useState('')
+  const [reservePrice, setReservePrice] = useState('')
   const [duration, setDuration] = useState('1') // Varsayılan 1 gün
   const [endingHour, setEndingHour] = useState('20') // Varsayılan 20:00
   const [selectedFiles, setSelectedFiles] = useState([])
@@ -101,6 +102,7 @@ function CreateAuctionPage() {
           listingId: listing.id,
           startingPrice: Number(startingPrice),
           endTime: endTimeDate.toISOString(),
+          reservePrice: reservePrice ? Number(reservePrice) : null,
         }),
       })
 
@@ -192,6 +194,20 @@ function CreateAuctionPage() {
           placeholder="Başlangıç fiyatı (TL)"
           className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
         />
+
+        {/* REZERV FİYAT — opsiyonel, boş bırakılabilir */}
+        <div>
+          <input
+            type="number"
+            value={reservePrice}
+            onChange={(e) => setReservePrice(e.target.value)}
+            placeholder="Rezerv fiyat (opsiyonel)"
+            className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+          />
+          <p className="mt-1.5 text-xs text-slate-500">
+            Teklifler bu fiyata ulaşmazsa satış gerçekleşmez. Boş bırakırsan en yüksek teklif her zaman kazanır.
+          </p>
+        </div>
 
         {/* SÜRE VE SAAT SEÇİMİ */}
         <div className="flex gap-4">

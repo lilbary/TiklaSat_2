@@ -88,4 +88,12 @@ public class ListingController {
                 .toList();
         return ResponseEntity.ok(imageUrls);
     }
+
+    // İLAN SİLME (soft delete — durumu DELETED/CANCELLED yapar, gerçek DB DELETE değil)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteListing(@PathVariable UUID id, Authentication authentication) {
+        String sellerEmail = (String) authentication.getPrincipal();
+        listingService.deleteListing(id, sellerEmail);
+        return ResponseEntity.ok(Map.of("message", "İlan silindi"));
+    }
 }
