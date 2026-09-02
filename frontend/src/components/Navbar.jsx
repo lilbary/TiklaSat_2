@@ -287,6 +287,16 @@ function Navbar() {
                     Hesabım
                   </p>
 
+                  {user?.roles?.includes('ROLE_ADMIN') && (
+                    <Link
+                      to="/admin/dashboard"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="block w-full px-4 py-2 text-left text-sm font-bold text-red-600 hover:bg-slate-50"
+                    >
+                      Admin Paneli
+                    </Link>
+                  )}
+
                   <Link
                     to={`/profil/${user?.userId}`}
                     onClick={() => setUserMenuOpen(false)}
@@ -322,14 +332,14 @@ function Navbar() {
           </div>
         </div>
       ) : (
-        <>
+        <div className="flex items-center gap-4 whitespace-nowrap">
           <Link to="/giris" className="text-sm font-medium text-slate-700 hover:text-red-600">
             Giriş Yap
           </Link>
           <Link to="/kayit" className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors">
             Kayıt Ol
           </Link>
-        </>
+        </div>
       )}
     </nav>
   )

@@ -235,7 +235,14 @@ function AuctionDetailPage() {
 
         {/* SAĞ KOLON: süre, satıcı, fiyat, teklif geçmişi */}
         <div>
-          {isActive ? (
+          {auction?.status === 'PENDING' ? (
+            <div className="rounded-xl bg-amber-50 border border-amber-200 p-4">
+              <p className="text-sm font-semibold text-amber-600">Bu açık artırma şu an Admin onayı bekliyor.</p>
+              <p className="mt-1 text-sm text-slate-700">
+                Admin onayladıktan sonra yayına girecek ve teklif almaya başlayacaktır.
+              </p>
+            </div>
+          ) : isActive ? (
             <div className="flex gap-2">
               <CountdownBox value={countdown.days} label="Gün" />
               <CountdownBox value={countdown.hours} label="Saat" />

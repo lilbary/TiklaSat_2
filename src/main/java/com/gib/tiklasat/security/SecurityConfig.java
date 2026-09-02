@@ -52,7 +52,7 @@ public class SecurityConfig {
                 // 1. FRONTEND İÇİN CORS İZNİ (Yeni eklediğimiz kısım)
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfig = new org.springframework.web.cors.CorsConfiguration();
-                    corsConfig.setAllowedOrigins(java.util.List.of("http://localhost:5173")); // Frontend'in adresi
+                    corsConfig.setAllowedOrigins(java.util.List.of("http://localhost:5173", "http://localhost:5174", "http://localhost:5175")); // Frontend'in muhtemel adresleri
                     corsConfig.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     corsConfig.setAllowedHeaders(java.util.List.of("*"));
                     corsConfig.setAllowCredentials(true);

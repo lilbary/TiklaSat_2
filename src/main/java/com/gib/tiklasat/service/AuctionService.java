@@ -22,7 +22,6 @@ import java.time.Duration;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import com.gib.tiklasat.repository.FavoriteRepository;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -79,9 +78,9 @@ public class AuctionService {
         auction.setCurrentPrice(startingPrice);
         auction.setStartTime(Instant.now()); // Başlangıç zamanı ŞU AN.
         auction.setEndTime(endTime);
-        auction.setStatus("ACTIVE");
+        auction.setStatus("PENDING");
         auction.setOriginalEndsAt(endTime);
-        auction.setReservePrice(reservePrice); 
+        auction.setReservePrice(reservePrice);
 
         // Veritabanına kaydet
         auction = auctionRepository.save(auction);
