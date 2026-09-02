@@ -8,7 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PathVariable;
+
 import java.util.UUID;
 
 @RestController
@@ -23,7 +23,7 @@ public class AuctionController {
     public ResponseEntity<AuctionDto> createAuction(@RequestBody AuctionCreateDto request, Authentication authentication) {
         String sellerEmail = (String) authentication.getPrincipal();
         return ResponseEntity.ok(
-            auctionService.createAuction(request.getListingId(), request.getStartingPrice(), request.getEndTime(), sellerEmail)
+            auctionService.createAuction(request.getListingId(), request.getStartingPrice(), request.getEndTime(), request.getReservePrice(), sellerEmail)
         );
     }
     // TÜM AÇIK ARTIRMALARI GETİR

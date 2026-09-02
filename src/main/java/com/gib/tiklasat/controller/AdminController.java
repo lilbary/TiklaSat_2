@@ -1,8 +1,10 @@
 package com.gib.tiklasat.controller;
 
 import com.gib.tiklasat.dto.AdminDashboardStatsDto;
+import com.gib.tiklasat.dto.UserDto;
 import com.gib.tiklasat.entity.Auction;
 import com.gib.tiklasat.service.AdminService;
+import com.gib.tiklasat.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +17,17 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
+    private final UserService userService;
 
     @GetMapping("/dashboard-stats")
     public ResponseEntity<AdminDashboardStatsDto> getDashboardStats() {
         return ResponseEntity.ok(adminService.getDashboardStats());
+    }
+
+    // Kayıtlı tüm kullanıcıları listeler — AdminUsersPage.jsx bunu kullanıyor
+    @GetMapping("/users")
+    public ResponseEntity<List<UserDto>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @GetMapping("/auctions/pending")

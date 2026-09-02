@@ -5,12 +5,14 @@ import { AuctionCard } from './AuctionCard.jsx'
 // (gen_random_uuid() ile) ID'ler değişir ama slug'lar migration'da sabit string.
 const CATEGORY_SLUGS = ['otomobil', 'oyun-konsollari', 'mobilya', 'apple-telefonlar']
 
-const TILE_STYLES = [
-  'from-slate-700 to-slate-500',
-  'from-red-600 to-red-400',
-  'from-amber-500 to-amber-300',
-  'from-emerald-600 to-emerald-400',
-]
+// Kategori fotoğrafları kullanıcı içeriği değil, sabit bir tasarım varlığı —
+// bu yüzden backend/veritabanı yerine frontend'in kendi public/ klasöründe duruyor.
+const CATEGORY_IMAGES = {
+  otomobil: '/categories/otomobil.jpg',
+  'oyun-konsollari': '/categories/oyun-konsollari.jpg',
+  mobilya: '/categories/mobilya.webp',
+  'apple-telefonlar': '/categories/apple-telefonlar.webp',
+}
 
 function WeeklyCategoryHighlights() {
   const [categories, setCategories] = useState([])
@@ -61,13 +63,11 @@ function WeeklyCategoryHighlights() {
     <section className="mb-14">
       <div className="mb-6 flex flex-wrap items-center gap-6">
         <div className="flex items-center gap-4">
-          <div
-            className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br font-display text-xl font-bold text-white ${
-              TILE_STYLES[activeIndex % TILE_STYLES.length]
-            }`}
-          >
-            {activeCategory.name.charAt(0)}
-          </div>
+          <img
+            src={CATEGORY_IMAGES[activeCategory.slug]}
+            alt={activeCategory.name}
+            className="h-14 w-14 shrink-0 rounded-xl object-cover"
+          />
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
               Bu Haftanın Kategorileri

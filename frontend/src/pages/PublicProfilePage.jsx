@@ -1,13 +1,27 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { AuctionCard } from '../components/AuctionCard.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
+
+function ThreeDotsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+      <circle cx="12" cy="5" r="1.5" />
+      <circle cx="12" cy="12" r="1.5" />
+      <circle cx="12" cy="19" r="1.5" />
+    </svg>
+  )
+}
 
 export default function PublicProfilePage() {
   const { id } = useParams()
+  const { user } = useAuth()
+  const isOwnProfile = user?.userId === id
   const [profile, setProfile] = useState(null)
   const [activeTab, setActiveTab] = useState('ACTIVE')
   const [auctions, setAuctions] = useState([])
   const [loading, setLoading] = useState(true)
+  const [openMenuId, setOpenMenuId] = useState(null)
 
   useEffect(() => {
     // Profil bilgisini çek
@@ -31,6 +45,29 @@ export default function PublicProfilePage() {
         setLoading(false)
       })
   }, [id, activeTab])
+
+  // "e" parametresi şart: bu buton artık AuctionCard'ın (yani bir <Link>'in)
+  // İÇİNDE render ediliyor — durdurmazsak tıklama, kartın kendi navigasyonunu da tetikler.
+  function handleDelete(e, auction) {
+    e.preventDefault()
+    e.stopPropagation()
+    setOpenMenuId(null)
+    if (!window.confirm(`"${auction.listingTitle}" ilanını silmek istediğinize emin misiniz?`)) return
+
+    const token = localStorage.getItem('token')
+    fetch(`/api/listings/${auction.listingId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json()
+          throw new Error(data.message || 'İlan silinemedi')
+        }
+        setAuctions((prev) => prev.filter((a) => a.id !== auction.id))
+      })
+      .catch((err) => alert(err.message))
+  }
 
   if (!profile) return <div className="py-20 text-center text-slate-500">Yükleniyor...</div>
 
@@ -93,7 +130,50 @@ export default function PublicProfilePage() {
       ) : (
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {auctions.map(auction => (
-            <AuctionCard key={auction.id} auction={auction} />
+            <AuctionCard
+              key={auction.id}
+              auction={auction}
+              actionSlot={
+                isOwnProfile && (
+                  <div className="relative shrink-0">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setOpenMenuId(openMenuId === auction.id ? null : auction.id)
+                      }}
+                      aria-label="İlan seçenekleri"
+                      className="flex h-7 w-7 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                    >
+                      <ThreeDotsIcon />
+                    </button>
+
+                    {openMenuId === auction.id && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            setOpenMenuId(null)
+                          }}
+                        />
+                        <div className="absolute right-0 top-full z-20 mt-1 w-40 overflow-hidden rounded-lg bg-white py-1 shadow-lg ring-1 ring-slate-200">
+                          <button
+                            type="button"
+                            onClick={(e) => handleDelete(e, auction)}
+                            className="block w-full px-4 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+                          >
+                            İlanı Sil
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )
+              }
+            />
           ))}
         </div>
       )}

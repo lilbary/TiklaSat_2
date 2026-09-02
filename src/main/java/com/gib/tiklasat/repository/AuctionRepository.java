@@ -37,27 +37,39 @@ public interface AuctionRepository extends JpaRepository<Auction, UUID> {
 
     @Query(
         value = """
+                WITH RECURSIVE category_tree AS (
+                        SELECT id FROM categories WHERE id = :categoryId
+                        UNION ALL
+                        SELECT c.id FROM categories c
+                        JOIN category_tree ct ON c.parent_id = ct.id
+                )
                 SELECT a.* FROM auctions a
-        JOIN listings l ON a.listing_id = l.id
-        WHERE a.status = 'ACTIVE' AND a.ends_at > now()
-        AND (:search IS NULL OR l.title ILIKE CONCAT('%', :search, '%'))
-        AND (:categoryId IS NULL OR l.category_id = :categoryId)
+                JOIN listings l ON a.listing_id = l.id
+                WHERE a.status = 'ACTIVE' AND a.ends_at > now()
+                AND (:search IS NULL OR l.title ILIKE CONCAT('%', :search, '%'))
+                AND (:categoryId IS NULL OR l.category_id IN (SELECT id FROM category_tree))
                 """,
         countQuery = """
+                WITH RECURSIVE category_tree AS (
+                        SELECT id FROM categories WHERE id = :categoryId
+                        UNION ALL
+                        SELECT c.id FROM categories c
+                        JOIN category_tree ct ON c.parent_id = ct.id
+                )
                 SELECT count(*) FROM auctions a
-        JOIN listings l ON a.listing_id = l.id
-        WHERE a.status = 'ACTIVE' AND a.ends_at > now()
-        AND (:search IS NULL OR l.title ILIKE CONCAT('%', :search, '%'))
-        AND (:categoryId IS NULL OR l.category_id = :categoryId)
+                JOIN listings l ON a.listing_id = l.id
+                WHERE a.status = 'ACTIVE' AND a.ends_at > now()
+                AND (:search IS NULL OR l.title ILIKE CONCAT('%', :search, '%'))
+                AND (:categoryId IS NULL OR l.category_id IN (SELECT id FROM category_tree))
                 """,
-        
+
         nativeQuery = true
-    )
-    Page<Auction> searchActiveAuctions(
+        )
+        Page<Auction> searchActiveAuctions(
         @Param("search") String search,
         @Param("categoryId") UUID categoryId,
         Pageable pageable
-    );
+        );
 
     // 5. EN ÇOK FAVORİLENEN aktif açık artırmalar — "Most Wanted" bölümü için
     // categoryId verilirse sadece o kategoriyle sınırlar (Haftanın Kategorileri bölümü için)
@@ -75,6 +87,8 @@ public interface AuctionRepository extends JpaRepository<Auction, UUID> {
         nativeQuery = true
     )
     List<Auction> findMostFavorited(@Param("limit") int limit, @Param("categoryId") UUID categoryId);
+
+    List<Auction> findByStatusAndEndingSoonNotifiedFalseAndEndTimeBetween(String status, Instant from, Instant to);
 
     // İlan sayısını statüye göre getirmek için
     long countByStatus(String status);

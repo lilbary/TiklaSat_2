@@ -11,4 +11,5 @@ public class AuctionCreateDto {
     private UUID listingId;
     private BigDecimal startingPrice;
     private Instant endTime;
+    private BigDecimal reservePrice; // opsiyonel — boş bırakılabilir
 }

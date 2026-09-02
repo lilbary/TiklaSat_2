@@ -42,8 +42,8 @@ function Navbar() {
   const [searchTerm, setSearchTerm] = useState('')
   const [categoriesOpen, setCategoriesOpen] = useState(false)
   const [categories, setCategories] = useState([])
-  const [subCategories, setSubCategories] = useState({}) // Cache for subcategories
-  const [activeCategoryId, setActiveCategoryId] = useState(null)
+  const [subCategories, setSubCategories] = useState({}) // Cache: { [parentId]: [çocuklar] }
+  const [activeChain, setActiveChain] = useState([])     // Hoverlanan zincir: [kökId, çocukId, torunId]
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [notificationsOpen, setNotificationsOpen] = useState(false)
@@ -75,7 +75,7 @@ function Navbar() {
       .then((data) => {
         setCategories(data)
         if (data.length > 0) {
-          setActiveCategoryId(data[0].id) // Varsayılan ilk kategoriyi seç
+          setActiveChain([data[0].id]) // Varsayılan ilk kategoriyi seç
           fetchSubCategories(data[0].id)
         }
       })
@@ -94,8 +94,8 @@ function Navbar() {
     }
   }
 
-  const handleCategoryHover = (catId) => {
-    setActiveCategoryId(catId)
+  const handleColumnHover = (depth, catId) => {
+    setActiveChain((prev) => [...prev.slice(0, depth), catId])
     fetchSubCategories(catId)
   }
 
@@ -135,54 +135,44 @@ function Navbar() {
 
         {/* 2. DÜZELTME: Trendyol Tarzı Mega Menü */}
         {categoriesOpen && (
-          <div className="absolute top-full left-[-100px] w-[800px] bg-white shadow-2xl rounded-b-lg border border-slate-100 flex min-h-[400px]">
-            {/* Sol Menü: Ana Kategoriler */}
-            <div className="w-1/4 bg-slate-50 border-r border-slate-200 py-4">
-              {categories.map((cat) => (
+          <div className="absolute top-full left-[-100px] w-[1000px] bg-white shadow-2xl rounded-b-lg border border-slate-100 flex min-h-[400px]">
+            {[0, 1, 2].map((depth) => {
+              const items = depth === 0 ? categories : subCategories[activeChain[depth - 1]]
+              if (!items) return null // Bu kolonun verisi henüz yok (hoverlanmadı) — hiç render etme
+
+              return (
                 <div
-                  key={cat.id}
-                  onMouseEnter={() => handleCategoryHover(cat.id)}
-                  onClick={() => handleCategoryClick(cat.id)}
-                  className={`cursor-pointer px-6 py-3 text-sm font-medium transition-colors ${
-                    activeCategoryId === cat.id
-                      ? 'bg-white text-red-600 border-l-4 border-red-600 font-bold shadow-sm'
-                      : 'text-slate-700 hover:bg-slate-100'
+                  key={depth}
+                  className={`w-1/3 py-4 ${depth < 2 ? 'border-r border-slate-200' : ''} ${
+                    depth === 0 ? 'bg-slate-50' : 'bg-white'
                   }`}
                 >
-                  {cat.name}
-                  {activeCategoryId === cat.id && (
-                    <span className="float-right text-red-600">&gt;</span>
+                  {items.length === 0 ? (
+                    <div className="px-6 text-sm text-slate-500 italic">
+                      Alt kategori bulunmuyor.
+                    </div>
+                  ) : (
+                    items.map((cat) => (
+                      <div
+                        key={cat.id}
+                        onMouseEnter={() => handleColumnHover(depth, cat.id)}
+                        onClick={() => handleCategoryClick(cat.id)}
+                        className={`cursor-pointer px-6 py-3 text-sm font-medium transition-colors ${
+                          activeChain[depth] === cat.id
+                            ? 'bg-white text-red-600 border-l-4 border-red-600 font-bold shadow-sm'
+                            : 'text-slate-700 hover:bg-slate-100'
+                        }`}
+                      >
+                        {cat.name}
+                        {activeChain[depth] === cat.id && depth < 2 && (
+                          <span className="float-right text-red-600">&gt;</span>
+                        )}
+                      </div>
+                    ))
                   )}
                 </div>
-              ))}
-            </div>
-
-            {/* Sağ Menü: Alt Kategoriler */}
-            <div className="w-3/4 p-8 bg-white">
-              <h3 className="text-lg font-bold text-slate-800 mb-6 border-b pb-2">
-                {categories.find(c => c.id === activeCategoryId)?.name} Kategorisi
-              </h3>
-              
-              <div className="grid grid-cols-3 gap-6">
-                {/* Eğer veritabanında alt kategori yoksa placeholder gösterelim */}
-                {(!subCategories[activeCategoryId] || subCategories[activeCategoryId].length === 0) ? (
-                  <div className="col-span-3 text-sm text-slate-500 italic">
-                    Henüz alt kategori bulunmuyor. Ana kategoriye gitmek için yandaki menüye tıklayabilirsiniz.
-                  </div>
-                ) : (
-                  subCategories[activeCategoryId].map((subCat) => (
-                    <div key={subCat.id} className="flex flex-col gap-2">
-                      <button
-                        onClick={() => handleCategoryClick(subCat.id)}
-                        className="text-left text-sm font-bold text-slate-800 hover:text-red-600"
-                      >
-                        {subCat.name}
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
+              )
+            })}
           </div>
         )}
       </div>
@@ -197,9 +187,9 @@ function Navbar() {
       />
 
       {user ? (
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-5 leading-none">
           <Link to="/artirma-olustur" className="text-sm font-medium text-slate-700 hover:text-red-600">
-            Artırma Oluştur
+            İlan Oluştur
           </Link>
 
           <Link to="/tekliflerim-ve-favorilerim" aria-label="Favoriler" className="text-slate-700 hover:text-red-600">
@@ -222,7 +212,7 @@ function Navbar() {
                   setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
                 }
               }}
-              className="relative text-slate-700 hover:text-red-600"
+              className="relative mt-px text-slate-700 hover:text-red-600"
             >
               <BellIcon />
               {notifications.some((n) => !n.read) && (

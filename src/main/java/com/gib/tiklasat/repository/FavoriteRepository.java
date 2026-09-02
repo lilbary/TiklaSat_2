@@ -15,4 +15,6 @@ public interface FavoriteRepository extends JpaRepository<Favorite, UUID> {
 
     Optional<Favorite> findByUserIdAndAuctionId(UUID userId, UUID auctionId);
 
+    List<Favorite> findByAuctionId(UUID auctionId);
+
 }
