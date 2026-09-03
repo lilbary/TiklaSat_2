@@ -16,6 +16,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.gib.tiklasat.dto.ForgotPasswordRequest;
+import com.gib.tiklasat.dto.ResetPasswordRequest;
+import com.gib.tiklasat.security.PasswordResetTokenService;
+import com.gib.tiklasat.service.MailService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.UUID;
 
@@ -28,6 +33,9 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final PasswordResetTokenService passwordResetTokenService;
+    private final MailService mailService;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody UserRegisterDto request) {
@@ -132,6 +140,58 @@ public class AuthController {
 
         return ResponseEntity.ok().build();
     }
+
+    // ŞİFREMİ UNUTTUM - Kullanıcı e-postasını girer, biz link atarız
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        // 1. Bu e-posta sistemde kayıtlı mı?
+        var userOptional = userRepository.findByEmail(request.getEmail());
+
+        if (userOptional.isEmpty()) {
+            // GÜVENLİK: Kullanıcıya "Bu mail kayıtlı değil" DEMİYORUZ!
+            // Çünkü hacker hangi maillerin sistemde olduğunu öğrenmesin.
+            // Her durumda aynı mesajı dönüyoruz.
+            return ResponseEntity.ok("Eğer bu e-posta kayıtlıysa, şifre sıfırlama bağlantısı gönderildi.");
+        }
+
+        // 2. 15 dakikalık token üret ve Redis'e kaydet
+        String token = passwordResetTokenService.createToken(request.getEmail());
+
+        // 3. Kullanıcıya mail at
+        mailService.sendPasswordResetEmail(request.getEmail(), token);
+
+        return ResponseEntity.ok("Eğer bu e-posta kayıtlıysa, şifre sıfırlama bağlantısı gönderildi.");
+    }
+
+    // ŞİFRE SIFIRLAMA - Kullanıcı linke tıklayıp yeni şifresini girer
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest request) {
+        // 1. Token'ı Redis'ten doğrula ve e-posta adresini al
+        String email = passwordResetTokenService.validateAndGetEmail(request.getToken());
+
+        // 2. Kullanıcıyı veritabanından bul
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı"));
+
+        // 3. Yeni şifreyi kriptolayarak kaydet
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        // 4. Token'ı sil (Aynı link ikinci kez kullanılmasın)
+        passwordResetTokenService.deleteToken(request.getToken());
+
+        return ResponseEntity.ok("Şifreniz başarıyla güncellendi. Giriş yapabilirsiniz.");
+    }
+
+
+
+
+
+
+
+
+
+
 
     //jknx nmli qctj ftnc
 }
