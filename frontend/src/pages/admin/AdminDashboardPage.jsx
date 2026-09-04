@@ -58,7 +58,12 @@ const AdminDashboardPage = () => {
 
     return (
         <div className="p-8 bg-gray-50 min-h-screen">
-            <h1 className="text-2xl font-bold mb-6 text-gray-800">Admin Dashboard</h1>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+                <Link to="/admin/kategoriler" className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 shadow-sm">
+                    Kategori Yönetimi
+                </Link>
+            </div>
             
             {/* 1. ÖZET KARTLARI */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">

@@ -4,7 +4,10 @@ import { useNavigate } from 'react-router-dom'
 function CreateAuctionPage() {
   const navigate = useNavigate()
 
-  const [categories, setCategories] = useState([])
+  const [categoryLists, setCategoryLists] = useState([])
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState([])
+  const [isLeafSelected, setIsLeafSelected] = useState(false)
+
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [categoryId, setCategoryId] = useState('')
@@ -20,8 +23,40 @@ function CreateAuctionPage() {
   useEffect(() => {
     fetch('/api/categories')
       .then((res) => res.json())
-      .then(setCategories)
+      .then(data => setCategoryLists([data]))
   }, [])
+
+  async function handleCategoryChange(levelIndex, selectedId) {
+    const newSelectedIds = selectedCategoryIds.slice(0, levelIndex)
+    if (selectedId) newSelectedIds.push(selectedId)
+    setSelectedCategoryIds(newSelectedIds)
+
+    const newCategoryLists = categoryLists.slice(0, levelIndex + 1)
+    
+    setIsLeafSelected(false)
+    setCategoryId('')
+
+    if (!selectedId) {
+      setCategoryLists(newCategoryLists)
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/categories/${selectedId}/subcategories`)
+      if (res.ok) {
+        const subCategories = await res.json()
+        if (subCategories.length > 0) {
+          setCategoryLists([...newCategoryLists, subCategories])
+        } else {
+          setCategoryLists(newCategoryLists)
+          setIsLeafSelected(true)
+          setCategoryId(selectedId)
+        }
+      }
+    } catch (err) {
+      console.error('Kategoriler yüklenirken hata oluştu:', err)
+    }
+  }
 
   // Fotoğraf seçildiğinde önizleme oluştur ve limitleri kontrol et
   function handleFileChange(e) {
@@ -143,17 +178,22 @@ function CreateAuctionPage() {
           className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
         />
 
-        <select
-          required
-          value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
-          className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-        >
-          <option value="">Kategori seç</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
+        <div className="space-y-3">
+          {categoryLists.map((categories, index) => (
+            <select
+              key={index}
+              required
+              value={selectedCategoryIds[index] || ''}
+              onChange={(e) => handleCategoryChange(index, e.target.value)}
+              className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              <option value="">{index === 0 ? 'Ana Kategori seç' : 'Alt Kategori seç'}</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
           ))}
-        </select>
+        </div>
 
         {/* FOTOĞRAF YÜKLEME ALANI */}
         <div>
@@ -252,8 +292,9 @@ function CreateAuctionPage() {
 
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || !isLeafSelected}
           className="w-full rounded-lg bg-red-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+          title={!isLeafSelected ? 'Lütfen en alt kategoriye kadar seçim yapınız' : ''}
         >
           {submitting ? 'Oluşturuluyor...' : 'Artırmayı Başlat'}
         </button>

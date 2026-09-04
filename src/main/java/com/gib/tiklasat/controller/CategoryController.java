@@ -35,4 +35,25 @@ public class CategoryController {
     public ResponseEntity<CategoryDto> createCategory(@RequestBody CategoryDto categoryDto) {
         return ResponseEntity.ok(categoryService.createCategory(categoryDto));
     }
+
+    // --- Kategori Güncelleme Endpoint'i ---
+    @PutMapping("/{id}")
+    public ResponseEntity<CategoryDto> updateCategory(@PathVariable UUID id, @RequestBody CategoryDto categoryDto) {
+        // Gelen URL'deki ID'yi ve Gövdedeki (Body) DTO'yu alıp Service katmanına paslıyoruz.
+        CategoryDto updatedCategory = categoryService.updateCategory(id, categoryDto);
+
+        // İşlem başarılı olursa, güncellenmiş kategoriyi "200 OK" statüsüyle geri dönüyoruz.
+        return ResponseEntity.ok(updatedCategory);
+    }
+
+    // --- Kategori Silme/Pasife Alma Endpoint'i ---
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCategory(@PathVariable UUID id) {
+        // Sadece URL'deki ID'yi alıp Service'teki o meşhur BR-C-007 kurallı metodumuza gönderiyoruz.
+        categoryService.deleteCategory(id);
+
+        // İşlem başarıyla bittiğinde geriye bir data dönmemize gerek yok.
+        // REST standartlarına göre başarılı silme işlemleri "204 No Content" döner.
+        return ResponseEntity.noContent().build();
+    }
 }

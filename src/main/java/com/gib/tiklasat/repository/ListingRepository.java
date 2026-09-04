@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface ListingRepository extends JpaRepository<Listing, UUID> {
     List<Listing> findByCategoryId(UUID categoryId);
     List<Listing> findBySellerId(UUID sellerId);
+    boolean existsByCategoryIdAndStatus(UUID categoryId, String status);
+
 }

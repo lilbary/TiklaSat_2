@@ -30,6 +30,10 @@ public class Category {
     @Column(name = "slug", length = 80, nullable = false, unique = true)
     private String slug;
 
+    @Column(name = "isActive")
+    private boolean isActive=true;
+    
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
