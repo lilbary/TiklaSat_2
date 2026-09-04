@@ -11,6 +11,7 @@ import TekliflerimVeFavorilerimPage from './pages/TekliflerimVeFavorilerimPage'
 import AldigimTekliflerPage from './pages/AldigimTekliflerPage'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminModerationPage from './pages/admin/AdminModerationPage'
+import AdminCategoriesPage from './pages/admin/AdminCategoriesPage'
 import PublicProfilePage from './pages/PublicProfilePage'
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/admin/kullanicilar" element={<AdminUsersPage />} />
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         <Route path="/admin/moderation" element={<AdminModerationPage />} />
+        <Route path="/admin/kategoriler" element={<AdminCategoriesPage />} />
         <Route path="/artirma-olustur" element={<CreateAuctionPage />} />
         <Route path="/ayarlar" element={<SettingsPage />} />
         <Route path="/tekliflerim-ve-favorilerim" element={<TekliflerimVeFavorilerimPage />} />
