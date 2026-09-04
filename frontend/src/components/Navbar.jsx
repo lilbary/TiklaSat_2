@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useWebSocket } from '../context/WebSocketContext.jsx'
 
 function HeartIcon() {
   return (
@@ -38,6 +39,7 @@ function ChevronDownIcon() {
 
 function Navbar() {
   const { user, logout } = useAuth()
+  const { subscribe, connected } = useWebSocket()
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [categoriesOpen, setCategoriesOpen] = useState(false)
@@ -64,10 +66,26 @@ function Navbar() {
   }
 
   fetchNotifications()
-  const interval = setInterval(fetchNotifications, 30000)
+  // WebSocket için bir yedek (fallback) — bağlantı kopup kısa süreliğine kaçırılan
+  // bir bildirim olursa, en geç 2 dakikada bir bu da yakalar. Ana yol artık aşağıdaki abonelik.
+  const interval = setInterval(fetchNotifications, 120000)
 
   return () => clearInterval(interval)
 }, [user])
+
+  // Anlık bildirim — kendi kişisel kanalıma abone ol, yeni bildirim gelince listeye ekle
+  useEffect(() => {
+    if (!user || !connected) return
+
+    const unsubscribe = subscribe(`/topic/notifications.${user.userId}`, (newNotification) => {
+      setNotifications((prev) => {
+        if (prev.some((n) => n.id === newNotification.id)) return prev // zaten varsa tekrar ekleme
+        return [newNotification, ...prev]
+      })
+    })
+
+    return unsubscribe
+  }, [user, connected])
 
   useEffect(() => {
     fetch('/api/categories')

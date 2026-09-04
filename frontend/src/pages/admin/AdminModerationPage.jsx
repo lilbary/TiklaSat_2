@@ -66,7 +66,7 @@ const AdminModerationPage = () => {
                                 <tr key={auction.id}>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         <Link to={`/artirma/${auction.id}`} className="text-blue-600 hover:underline" target="_blank">
-                                            {auction.title}
+                                            {auction.listingTitle}
                                         </Link>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₺{auction.startingPrice}</td>

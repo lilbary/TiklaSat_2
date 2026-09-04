@@ -120,10 +120,18 @@ public class AuctionService {
                                             topBid.getAmount());
 
                                     String winnerMessage = "'" + auction.getListing().getTitle() + "' açık artırmasını kazandınız! Kazanan teklif: " + topBid.getAmount() + " TL";
-                                    notificationService.createNotification(topBid.getBidder(), auction, winnerMessage);
+                                    try {
+                                        notificationService.createNotification(topBid.getBidder(), auction, winnerMessage);
+                                    } catch (Exception e) {
+                                        log.error("Bildirim oluşturulamadı, açık artırma kapanışı devam ediyor", e);
+                                    }
 
                                     String sellerMessage = "'" + auction.getListing().getTitle() + "' ilanınız " + topBid.getAmount() + " TL'ye satıldı!";
-                                    notificationService.createNotification(auction.getListing().getSeller(), auction, sellerMessage);
+                                    try {
+                                        notificationService.createNotification(auction.getListing().getSeller(), auction, sellerMessage);
+                                    } catch (Exception e) {
+                                        log.error("Bildirim oluşturulamadı, açık artırma kapanışı devam ediyor", e);
+                                    }
                                 } else {
                                     // En yüksek teklif rezervin ALTINDA -> satış gerçekleşmez
                                     auction.setStatus("RESERVE_NOT_MET");
@@ -133,10 +141,18 @@ public class AuctionService {
                                             auction.getReservePrice());
 
                                     String bidderMessage = "'" + auction.getListing().getTitle() + "' açık artırmasında en yüksek teklif sizindi, ama satıcının belirlediği minimum fiyata ulaşılamadığı için satış gerçekleşmedi.";
-                                    notificationService.createNotification(topBid.getBidder(), auction, bidderMessage);
+                                    try {
+                                        notificationService.createNotification(topBid.getBidder(), auction, bidderMessage);
+                                    } catch (Exception e) {
+                                        log.error("Bildirim oluşturulamadı, açık artırma kapanışı devam ediyor", e);
+                                    }
 
                                     String sellerMessage = "'" + auction.getListing().getTitle() + "' ilanınız için en yüksek teklif, belirlediğiniz rezerv fiyatın altında kaldı. Satış gerçekleşmedi.";
-                                    notificationService.createNotification(auction.getListing().getSeller(), auction, sellerMessage);
+                                    try {
+                                        notificationService.createNotification(auction.getListing().getSeller(), auction, sellerMessage);
+                                    } catch (Exception e) {
+                                        log.error("Bildirim oluşturulamadı, açık artırma kapanışı devam ediyor", e);
+                                    }
                                 }
                             },
                             () -> {
@@ -209,7 +225,11 @@ public class AuctionService {
             List<Favorite> favorites = favoriteRepository.findByAuctionId(auction.getId());
             String message = "Favorilediğin '" + auction.getListing().getTitle() + "' açık artırmasının süresi 1 saatten az kaldı!";
             for (Favorite favorite : favorites) {
-                notificationService.createNotification(favorite.getUser(), auction, message);
+                try {
+                    notificationService.createNotification(favorite.getUser(), auction, message);
+                } catch (Exception e) {
+                    log.error("Bildirim oluşturulamadı, bitmek üzere kontrolü devam ediyor", e);
+                }
             }
             auction.setEndingSoonNotified(true);
             auctionRepository.save(auction);

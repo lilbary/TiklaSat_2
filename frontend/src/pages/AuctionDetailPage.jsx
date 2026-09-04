@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Client } from '@stomp/stompjs'
-import SockJS from 'sockjs-client'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useWebSocket } from '../context/WebSocketContext.jsx'
 import FavoriteHeartButton from '../components/FavoriteHeartButton.jsx'
 
 // Backend'deki BidService.calculateMinIncrement ile AYNI merdiven — burada sadece
@@ -78,6 +77,7 @@ function ImagePlaceholder({ letter }) {
 function AuctionDetailPage() {
   const { id } = useParams()
   const { user } = useAuth()
+  const { subscribe, connected } = useWebSocket()
 
   const [auction, setAuction] = useState(null)
   const [currentPrice, setCurrentPrice] = useState(null)
@@ -101,27 +101,19 @@ function AuctionDetailPage() {
       .then(setBidHistory)
   }, [id])
 
-  // 2. WebSocket bağlantısı — bu artırmanın kanalına abone ol
+  // 2. Bu artırmanın kanalına abone ol — paylaşımlı WebSocket bağlantısı üzerinden
   useEffect(() => {
-    const client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws-auction'),
-      onConnect: () => {
-        client.subscribe(`/topic/auctions.${id}`, (message) => {
-          const newBid = JSON.parse(message.body)
-          setCurrentPrice(newBid.amount)
-          setBidHistory((prev) => [newBid, ...prev])
-          setNotice(`Yeni teklif: ${newBid.amount.toLocaleString('tr-TR')} TL (${newBid.bidderName})`)
-        })
-      },
+    if (!connected) return
+
+    const unsubscribe = subscribe(`/topic/auctions.${id}`, (newBid) => {
+      setCurrentPrice(newBid.amount)
+      setBidHistory((prev) => [newBid, ...prev])
+      setNotice(`Yeni teklif: ${newBid.amount.toLocaleString('tr-TR')} TL (${newBid.bidderName})`)
     })
 
-    client.activate()
-
-    // Temizlik: sayfadan ayrılınca bağlantıyı kapat
-    return () => {
-      client.deactivate()
-    }
-  }, [id])
+    // Temizlik: sayfadan ayrılınca (ya da id değişince) abonelikten çık
+    return unsubscribe
+  }, [id, connected])
 
   // 3. Teklif verme
   async function submitBid(amount) {

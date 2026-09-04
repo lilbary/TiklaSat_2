@@ -14,6 +14,7 @@ import com.gib.tiklasat.repository.AuctionRepository;
 import com.gib.tiklasat.repository.BidRepository;
 import com.gib.tiklasat.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gib.tiklasat.entity.OutboxEvent;
 import com.gib.tiklasat.repository.OutboxEventRepository;
@@ -30,6 +31,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BidService {
@@ -99,7 +101,11 @@ public class BidService {
         if (!existingBids.isEmpty() && !existingBids.get(0).getBidder().getId().equals(bidder.getId())) {
             User outbidUser = existingBids.get(0).getBidder();
             String message = "'" + auction.getListing().getTitle() + "' için teklifiniz geçildi! Yeni fiyat: " + amount + " TL";
-            notificationService.createNotification(outbidUser, auction, message);
+            try {
+                notificationService.createNotification(outbidUser, auction, message);
+            } catch (Exception e) {
+                log.error("Bildirim oluşturulamadı, teklif işlemi devam ediyor", e);
+            }
         }
 
         Instant now = Instant.now();
