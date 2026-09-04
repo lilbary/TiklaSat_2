@@ -22,7 +22,7 @@ public class NotificationService {
     private final UserRepository userRepository;
 
     // Diğer servislerin (örn. BidService) çağıracağı, bildirim OLUŞTURAN iç yardımcı metot
-    @Transactional
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
     public void createNotification(User user, Auction auction, String message) {
         Notification notification = new Notification();
         notification.setUser(user);

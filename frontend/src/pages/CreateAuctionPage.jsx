@@ -224,8 +224,7 @@ function CreateAuctionPage() {
               <option value="1">1 Gün</option>
               <option value="3">3 Gün</option>
               <option value="7">1 Hafta (7 Gün)</option>
-              <option value="15">15 Gün</option>
-              <option value="30">1 Ay (30 Gün)</option>
+              <option value="14">2 Hafta (14 Gün)</option>
             </select>
           </div>
 

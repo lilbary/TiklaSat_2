@@ -57,7 +57,7 @@ public class JwtService {
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername()) // Kimin bileti?
                 .setIssuedAt(new Date(System.currentTimeMillis())) // Ne zaman basıldı?
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24 Saat geçerli
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15)) // 15 Dakika geçerli
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256) // Mühürle
                 .compact();
     }
