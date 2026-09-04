@@ -114,7 +114,7 @@ const AdminDashboardPage = () => {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                             {/* Admin, ilanın detayına gidip bakabilir */}
                                             <Link to={`/artirma/${auction.id}`} className="text-blue-600 hover:text-blue-800 hover:underline" target="_blank">
-                                                {auction.title}
+                                                {auction.listingTitle}
                                             </Link>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">

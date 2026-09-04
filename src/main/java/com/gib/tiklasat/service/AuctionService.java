@@ -66,6 +66,11 @@ public class AuctionService {
         if (endTime.isBefore(Instant.now())) {
             throw new RuntimeException("Bitiş tarihi geçmiş bir zaman olamaz!");
         }
+        
+        // KURAL: Bitiş tarihi 14 günü geçemez (BR-A-004)
+        if (Duration.between(Instant.now(), endTime).toDays() > 14) {
+            throw new RuntimeException("Açık artırma süresi en fazla 14 gün olabilir!");
+        }
 
         if (reservePrice != null && reservePrice.compareTo(startingPrice) < 0) {
         throw new RuntimeException("Rezerv fiyat, başlangıç fiyatından düşük olamaz!");

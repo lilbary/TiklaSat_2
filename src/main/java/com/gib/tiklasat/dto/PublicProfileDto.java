@@ -12,7 +12,7 @@ public class PublicProfileDto {
     private UUID id;
     private String fullName;
     private Instant memberSince;
-
+//object mapper map struck
     public static PublicProfileDto fromEntity (User user){
         PublicProfileDto dto = new PublicProfileDto();
         dto.setId(user.getId());

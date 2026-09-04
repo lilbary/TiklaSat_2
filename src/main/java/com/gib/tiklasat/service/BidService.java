@@ -104,6 +104,7 @@ public class BidService {
             try {
                 notificationService.createNotification(outbidUser, auction, message);
             } catch (Exception e) {
+                // Bildirim hatası teklifi iptal etmesin (BR-N-007)
                 log.error("Bildirim oluşturulamadı, teklif işlemi devam ediyor", e);
             }
         }
@@ -124,7 +125,12 @@ public class BidService {
 
             String extensionMessage = "'" + auction.getListing().getTitle() + "' açık artırmasının süresi son dakika teklifiyle uzadı!";
             for (User previousBidder : previousBidders) {
-                notificationService.createNotification(previousBidder, auction, extensionMessage);
+                try {
+                    notificationService.createNotification(previousBidder, auction, extensionMessage);
+                } catch (Exception e) {
+                    // Bildirim hatası uzatmayı iptal etmesin (BR-N-007)
+                    log.error("Bildirim oluşturulamadı, süre uzatma işlemi devam ediyor", e);
+                }
             }
         }
 
@@ -217,13 +223,10 @@ public class BidService {
     // YARDIMCI METOT: Kademeli Artış Tablosu
     // Fiyat arttıkça, yapılması gereken minimum teklif artışı da büyür.
     private BigDecimal calculateMinIncrement(BigDecimal currentPrice) {
-        if (currentPrice.compareTo(new BigDecimal("100")) < 0) return new BigDecimal("1");
-        if (currentPrice.compareTo(new BigDecimal("500")) < 0) return new BigDecimal("5");
-        if (currentPrice.compareTo(new BigDecimal("1000")) < 0) return new BigDecimal("10");
-        if (currentPrice.compareTo(new BigDecimal("5000")) < 0) return new BigDecimal("50");
+        if (currentPrice.compareTo(new BigDecimal("1000")) < 0) return new BigDecimal("25");
         if (currentPrice.compareTo(new BigDecimal("10000")) < 0) return new BigDecimal("100");
-        if (currentPrice.compareTo(new BigDecimal("50000")) < 0) return new BigDecimal("500");
-        if (currentPrice.compareTo(new BigDecimal("100000")) < 0) return new BigDecimal("1000");
-        return new BigDecimal("5000");
+        if (currentPrice.compareTo(new BigDecimal("100000")) < 0) return new BigDecimal("500");
+        if (currentPrice.compareTo(new BigDecimal("500000")) < 0) return new BigDecimal("2500");
+        return currentPrice.multiply(new BigDecimal("0.01")); // %1 yüzdelik dilim
     }
 }
