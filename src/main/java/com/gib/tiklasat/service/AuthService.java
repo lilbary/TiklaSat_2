@@ -36,7 +36,7 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setFullName(request.getFullName());
         user.setPhone(request.getPhone());
-        user.setRole(Role.USER);
+        user.addRole(Role.BUYER); // BR-U-003: kayıt olan herkes otomatik BUYER
         
         // ŞİFREYİ KRİPTOLAYARAK KAYDEDİYORUZ! (En büyük fark bu)
         user.setPassword(passwordEncoder.encode(request.getPassword()));

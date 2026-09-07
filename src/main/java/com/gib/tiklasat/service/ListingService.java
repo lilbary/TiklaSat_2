@@ -8,6 +8,7 @@ import com.gib.tiklasat.repository.BidRepository;
 import com.gib.tiklasat.dto.ListingDto;
 import com.gib.tiklasat.entity.Category;
 import com.gib.tiklasat.entity.Listing;
+import com.gib.tiklasat.entity.Role;
 import com.gib.tiklasat.entity.User;
 import com.gib.tiklasat.exception.ResourceNotFoundException;
 import com.gib.tiklasat.repository.CategoryRepository;
@@ -70,6 +71,13 @@ public class ListingService {
         User seller = userRepository.findByEmail(sellerEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
         listing.setSeller(seller);
+
+        // BR-U-003: ilk ilanla birlikte SELLER rolü eklenir, ayrı satıcı hesabı açılmaz.
+        // Set olduğu için "ilk mi?" diye ayrıca sormaya gerek yok — zaten varsa
+        // tekrar eklenmiyor, dolayısıyla ekstra bir sorgu da atmıyoruz.
+        // Kullanıcı managed durumda; dirty checking commit sırasında INSERT'i kendisi atar.
+        seller.addRole(Role.SELLER);
+
         listing = listingRepository.save(listing);
         return ListingDto.fromEntity(listing);
     }

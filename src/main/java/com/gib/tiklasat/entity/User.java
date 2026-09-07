@@ -12,9 +12,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 @Getter
 @Setter
 @NoArgsConstructor
@@ -39,9 +42,15 @@ public class User implements UserDetails {
     @Column(name = "phone", length = 20)
     private String phone;
     
+    // BR-U-003: bir kullanıcı aynı anda birden fazla role sahip olabilir.
+    // EAGER kasıtlı: getAuthorities() giriş ve token üretimi sırasında çağrılıyor,
+    // LAZY olsaydı session kapandıktan sonra LazyInitializationException riski olurdu.
+    // Maliyeti düşük — kullanıcı başına tipik olarak 1-3 satır.
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role = Role.USER;
+    @Column(name = "role", nullable = false)
+    private Set<Role> roles = new HashSet<>();
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -51,7 +60,20 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        // Spring Security rolleri "ROLE_" önekiyle bekler; hasRole("ADMIN")
+        // aslında "ROLE_ADMIN" yetkisini arıyor.
+        return roles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+                .collect(Collectors.toSet());
+    }
+
+    /** Rol ekler; zaten varsa hiçbir şey yapmaz (Set olduğu için tekrar oluşmaz). */
+    public void addRole(Role role) {
+        roles.add(role);
+    }
+
+    public boolean hasRole(Role role) {
+        return roles.contains(role);
     }
 
     @Override
