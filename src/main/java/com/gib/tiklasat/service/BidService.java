@@ -21,6 +21,8 @@ import com.gib.tiklasat.repository.OutboxEventRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
+import com.gib.tiklasat.event.NotificationRequestedEvent;
+import java.util.ArrayList;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -124,14 +126,14 @@ public class BidService {
                     .collect(Collectors.toSet());
 
             String extensionMessage = "'" + auction.getListing().getTitle() + "' açık artırmasının süresi son dakika teklifiyle uzadı!";
-            for (User previousBidder : previousBidders) {
-                try {
-                    notificationService.createNotification(previousBidder, auction, extensionMessage);
-                } catch (Exception e) {
-                    // Bildirim hatası uzatmayı iptal etmesin (BR-N-007)
-                    log.error("Bildirim oluşturulamadı, süre uzatma işlemi devam ediyor", e);
-                }
-            }
+
+            // Tek parti hâlinde yolluyoruz: teklif commit olduktan sonra hepsi TEK transaction'da yazılacak.
+            notificationService.createNotifications(
+                    previousBidders.stream()
+                            .map(bidder2 -> new NotificationRequestedEvent.Item(
+                                    bidder2.getId(), auction.getId(), extensionMessage))
+                            .toList()
+            );
         }
 
         // Outbox Pattern: WebSocket'e hemen haber verme, Outbox (Giden Kutusu) tablosuna not bırak.

@@ -4,6 +4,7 @@ import com.gib.tiklasat.dto.AuctionDto;
 import com.gib.tiklasat.entity.Auction;
 import com.gib.tiklasat.entity.Favorite;
 import com.gib.tiklasat.entity.Listing;
+import com.gib.tiklasat.event.NotificationRequestedEvent;
 import com.gib.tiklasat.exception.ConflictException;
 import com.gib.tiklasat.exception.ForbiddenActionException;
 import com.gib.tiklasat.exception.ResourceNotFoundException;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -224,15 +226,6 @@ public class AuctionService {
         Instant now = Instant.now();
         Instant in1Hour = now.plus(Duration.ofHours(1));
 
-        /*for (Auction auction : endingSoon) {
-        List<Favorite> favorites = favoriteRepository.findByAuctionId(auction.getId());   // ← döngü İÇİNDE sorgu
-        String message = "...";
-        for (Favorite favorite : favorites) {
-            notificationService.createNotification(favorite.getUser(), auction, message);
-        }
-        auction.setEndingSoonNotified(true);
-        } */
-       
         List<Auction> endingSoon = auctionRepository
         .findByStatusAndEndingSoonNotifiedFalseAndEndTimeBetween("ACTIVE", now, in1Hour);
 
@@ -245,18 +238,19 @@ public class AuctionService {
                 .stream()
                 .collect(Collectors.groupingBy(favorite -> favorite.getAuction().getId()));
 
+        // Turdaki TÜM bildirimleri tek listede topluyoruz — tek olay, tek transaction.
+        List<NotificationRequestedEvent.Item> items = new ArrayList<>();
+
         for (Auction auction : endingSoon) {
             List<Favorite> favorites = favoritesByAuction.getOrDefault(auction.getId(), List.of());
             String message = "Favorilediğin '" + auction.getListing().getTitle() + "' açık artırmasının süresi 1 saatten az kaldı!";
             for (Favorite favorite : favorites) {
-                try {
-                    notificationService.createNotification(favorite.getUser(), auction, message);
-                } catch (Exception e) {
-                    log.error("Bildirim oluşturulamadı, bitmek üzere kontrolü devam ediyor", e);
-                }
+                items.add(new NotificationRequestedEvent.Item(
+                        favorite.getUser().getId(), auction.getId(), message));
             }
             auction.setEndingSoonNotified(true);
-            auctionRepository.save(auction);
         }
-    }
+
+        notificationService.createNotifications(items);
+        }
 }
