@@ -91,7 +91,8 @@ public interface AuctionRepository extends JpaRepository<Auction, UUID> {
     List<Auction> findMostFavorited(@Param("limit") int limit, @Param("categoryId") UUID categoryId);
 
     @EntityGraph(attributePaths = "listing")
-    List<Auction> findByStatusAndEndingSoonNotifiedFalseAndEndTimeBetween(String status, Instant from, Instant to);
+    List<Auction> findByStatusAndEndingSoonNotifiedFalseAndEndTimeBetween(
+            String status, Instant from, Instant to, Pageable pageable);
 
     // İlan sayısını statüye göre getirmek için
     long countByStatus(String status);

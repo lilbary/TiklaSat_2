@@ -23,6 +23,7 @@ import java.time.Duration;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -226,8 +227,16 @@ public class AuctionService {
         Instant now = Instant.now();
         Instant in1Hour = now.plus(Duration.ofHours(1));
 
+        // Tur başına en fazla 500 açık artırma: IN listesi şişmesin ve iş ShedLock'ın
+        // 50 saniyelik kilidini aşmasın (aşarsa kilit düşer, ikinci sunucu aynı listeyi
+        // çeker ve aynı kullanıcılara ikinci kez bildirim gider). Artakalanlar bir
+        // sonraki turda işlenir; işlenenler bayrakla kısmi index'ten düştüğü için
+        // OFFSET'e gerek yok, hep 0. sayfa isteniyor.
+        // Sort.by("endTime") bedava: idx_auctions_ending_soon zaten ends_at üzerinde.
         List<Auction> endingSoon = auctionRepository
-        .findByStatusAndEndingSoonNotifiedFalseAndEndTimeBetween("ACTIVE", now, in1Hour);
+                .findByStatusAndEndingSoonNotifiedFalseAndEndTimeBetween(
+                        "ACTIVE", now, in1Hour,
+                        PageRequest.of(0, 500, Sort.by("endTime")));
 
         if (endingSoon.isEmpty()) return;
 
