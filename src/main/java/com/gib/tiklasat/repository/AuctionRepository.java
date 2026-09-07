@@ -1,6 +1,8 @@
 package com.gib.tiklasat.repository;
 
 import com.gib.tiklasat.entity.Auction;
+
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -88,6 +90,7 @@ public interface AuctionRepository extends JpaRepository<Auction, UUID> {
     )
     List<Auction> findMostFavorited(@Param("limit") int limit, @Param("categoryId") UUID categoryId);
 
+    @EntityGraph(attributePaths = "listing")
     List<Auction> findByStatusAndEndingSoonNotifiedFalseAndEndTimeBetween(String status, Instant from, Instant to);
 
     // İlan sayısını statüye göre getirmek için

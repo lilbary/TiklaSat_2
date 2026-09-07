@@ -28,6 +28,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -223,11 +224,29 @@ public class AuctionService {
         Instant now = Instant.now();
         Instant in1Hour = now.plus(Duration.ofHours(1));
 
+        /*for (Auction auction : endingSoon) {
+        List<Favorite> favorites = favoriteRepository.findByAuctionId(auction.getId());   // ← döngü İÇİNDE sorgu
+        String message = "...";
+        for (Favorite favorite : favorites) {
+            notificationService.createNotification(favorite.getUser(), auction, message);
+        }
+        auction.setEndingSoonNotified(true);
+        } */
+       
         List<Auction> endingSoon = auctionRepository
-                .findByStatusAndEndingSoonNotifiedFalseAndEndTimeBetween("ACTIVE", now, in1Hour);
+        .findByStatusAndEndingSoonNotifiedFalseAndEndTimeBetween("ACTIVE", now, in1Hour);
+
+        if (endingSoon.isEmpty()) return;
+
+        // Tüm açık artırmaların favorilerini TEK sorguda çekip auction id'sine göre grupluyoruz.
+        // f.getAuction().getId() ek sorgu açmaz: lazy proxy kimliği zaten biliyor.
+        List<UUID> auctionIds = endingSoon.stream().map(Auction::getId).toList();
+        Map<UUID, List<Favorite>> favoritesByAuction = favoriteRepository.findByAuctionIdIn(auctionIds)
+                .stream()
+                .collect(Collectors.groupingBy(favorite -> favorite.getAuction().getId()));
 
         for (Auction auction : endingSoon) {
-            List<Favorite> favorites = favoriteRepository.findByAuctionId(auction.getId());
+            List<Favorite> favorites = favoritesByAuction.getOrDefault(auction.getId(), List.of());
             String message = "Favorilediğin '" + auction.getListing().getTitle() + "' açık artırmasının süresi 1 saatten az kaldı!";
             for (Favorite favorite : favorites) {
                 try {
