@@ -11,6 +11,18 @@ function RegisterPage() {
   const navigate = useNavigate()
   const { login } = useAuth()
 
+  // BR-U-006'nın kullanıcıya gösterilebilen kısmı. Unicode sınıfları (\p{Lu} vb.)
+  // bilerek seçildi: backend Character.isUpperCase kullanıyor, o da Türkçe
+  // harfleri (Ğ, Ş, İ...) doğru sayıyor — iki taraf aynı şeyi kabul etsin.
+  // Kara liste kontrolü burada YOK; o sunucuda kalıyor. İstemci yardımcı,
+  // sunucu otorite.
+  const passwordRules = [
+    { ok: password.length >= 10, label: 'En az 10 karakter' },
+    { ok: /\p{Lu}/u.test(password), label: 'Bir büyük harf' },
+    { ok: /\p{Ll}/u.test(password), label: 'Bir küçük harf' },
+    { ok: /\p{Nd}/u.test(password), label: 'Bir rakam' },
+  ]
+
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
@@ -80,6 +92,20 @@ function RegisterPage() {
             placeholder="Şifre"
             className="w-full rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500"
           />
+
+          {password && (
+            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
+              {passwordRules.map((rule) => (
+                <li
+                  key={rule.label}
+                  className={`flex items-center gap-1.5 ${rule.ok ? 'text-green-600' : 'text-slate-500'}`}
+                >
+                  <span aria-hidden="true">{rule.ok ? '✓' : '○'}</span>
+                  {rule.label}
+                </li>
+              ))}
+            </ul>
+          )}
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 

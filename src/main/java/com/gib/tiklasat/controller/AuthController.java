@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.gib.tiklasat.dto.ForgotPasswordRequest;
@@ -38,7 +39,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody UserRegisterDto request) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody UserRegisterDto request) {
         return ResponseEntity.ok(authService.register(request));
     }
 
@@ -165,7 +166,7 @@ public class AuthController {
 
     // ŞİFRE SIFIRLAMA - Kullanıcı linke tıklayıp yeni şifresini girer
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         // 1. Token'ı Redis'ten doğrula ve e-posta adresini al
         String email = passwordResetTokenService.validateAndGetEmail(request.getToken());
 
