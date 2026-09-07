@@ -9,8 +9,8 @@ import java.util.UUID;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, UUID> {
-    List<Category> findByParentIsNullAndIsActiveTrue();
-    List<Category> findByParentIdAndIsActiveTrue(UUID parentId);
+    List<Category> findByParentIsNullAndIsActiveTrue();              //parents
+    List<Category> findByParentIdAndIsActiveTrue(UUID parentId);       //cocuklar
     boolean existsByParentId(UUID parentId);
     List<Category> findBySlugIn(List<String> slugs);
 }

@@ -41,6 +41,7 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "subcategories", key = "#parentId")
     public List<CategoryDto> getSubCategories(UUID parentId) {
         return categoryRepository.findByParentIdAndIsActiveTrue(parentId).stream()
                 .map(CategoryDto::fromEntity)
@@ -63,10 +64,19 @@ public class CategoryService {
         category = categoryRepository.save(category);
         return CategoryDto.fromEntity(category);
     }
+
+
+
+
     //UPDATE KATEGORİ
     @Transactional //aman int giderse falan sıkıntı olmasın. yarım yamalaak kaydetmeyek diye
     @CacheEvict(value = "categories", allEntries = true)//cachete tuttugumuz categoriler verisini degisikliktren sonr agunceller
     public CategoryDto updateCategory(UUID id, CategoryDto dto) {
+        //sistemde degistirdigimiz kategorinin urlsi ve dtosu gelir. dto icinde name ve parentid var.
+        //bunu da category objesine atıp sonra dto obejsindeki veriler ile guncelliyoruz.
+
+
+
 
         //Kategoriyi veritabanında bul
         Category category = categoryRepository.findById(id)
@@ -114,7 +124,7 @@ public class CategoryService {
     // Geriye bir şey dönmesine gerek olmadığı için void yapıyoruz.
 
     public void deleteCategory(UUID id) {
-
+// sadece id alır ve onu bulursa category degiskenine atar daha sonra sartlara gore  soft ya da hard delete yapar.
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Silinecek kategori bulunamadı!"));
 
