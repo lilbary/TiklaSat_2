@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.ArrayList;
 import java.time.Instant;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import java.util.Map;
+import java.util.HashMap;
 
 @Getter
 @Setter
@@ -40,6 +44,10 @@ public class Listing {
 
     @Column(name = "view_count", nullable = false)
     private Integer viewCount = 0;
+
+    @Column(name = "attributes", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private Map<String, Object> attributes = new HashMap<>();
 
     // Bu ilana ait fotoğraflar
     @OneToMany(mappedBy = "listing", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -5,6 +5,7 @@ import com.gib.tiklasat.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.gib.tiklasat.dto.CategoryAttributeDto;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +30,11 @@ public class CategoryController {
     @GetMapping("/{parentId}/subcategories")
     public ResponseEntity<List<CategoryDto>> getSubCategories(@PathVariable UUID parentId) {
         return ResponseEntity.ok(categoryService.getSubCategories(parentId));
+    }
+
+    @GetMapping("/{categoryId}/attributes")
+    public ResponseEntity<List<CategoryAttributeDto>> getCategoryAttributes(@PathVariable UUID categoryId) {
+        return ResponseEntity.ok(categoryService.getCategoryAttributes(categoryId));
     }
 
     @PostMapping
