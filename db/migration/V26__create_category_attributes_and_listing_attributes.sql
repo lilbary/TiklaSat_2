@@ -16,7 +16,7 @@ CREATE TABLE category_attributes (
     CONSTRAINT uq_category_attribute UNIQUE (category_id, name)
 );
 
-//aramalar kolaylassın diye indexledik
+-- aramalar kolaylassın diye indexledik
 CREATE INDEX idx_category_attributes_category ON category_attributes(category_id);
 
 
@@ -25,7 +25,7 @@ CREATE INDEX idx_category_attributes_category ON category_attributes(category_id
 ALTER TABLE listings ADD COLUMN attributes JSONB DEFAULT '{}'::jsonb;
 
 CREATE INDEX idx_listings_attributes_gin ON listings USING GIN (attributes);
-//gın indeksi kullanılıyo.
+-- gın indeksi kullanılıyo.
 
 
 
