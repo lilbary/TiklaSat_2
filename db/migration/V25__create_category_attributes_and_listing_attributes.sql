@@ -1,7 +1,7 @@
 
 --    Hangi kategoride hangi form alanları çıkacağını tanımlar.
 -- ============================================================
-CREATE TABLE category_attributes (
+CREATE TABLE IF NOT EXISTS category_attributes (
     id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     category_id UUID         NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
     name        VARCHAR(100) NOT NULL,-- Backend key: "kilometre"
@@ -16,16 +16,16 @@ CREATE TABLE category_attributes (
     CONSTRAINT uq_category_attribute UNIQUE (category_id, name)
 );
 
-//aramalar kolaylassın diye indexledik
-CREATE INDEX idx_category_attributes_category ON category_attributes(category_id);
+-- aramalar kolaylassın diye indexledik
+CREATE INDEX IF NOT EXISTS idx_category_attributes_category ON category_attributes(category_id);
 
 
 -- 2) listings tablosuna JSONB attributes kolonu
 -- ============================================================
-ALTER TABLE listings ADD COLUMN attributes JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS attributes JSONB DEFAULT '{}'::jsonb;
 
-CREATE INDEX idx_listings_attributes_gin ON listings USING GIN (attributes);
-//gın indeksi kullanılıyo.
+CREATE INDEX IF NOT EXISTS idx_listings_attributes_gin ON listings USING GIN (attributes);
+-- gın indeksi kullanılıyo.
 
 
 
@@ -66,7 +66,8 @@ VALUES
     ((SELECT id FROM categories WHERE slug = 'otomobil'),
      'renk', 'Renk', 'SELECT',
      '["Beyaz","Siyah","Gri","Kırmızı","Mavi","Lacivert","Gümüş","Kahverengi","Diğer"]',
-     false, NULL, 7);
+     false, NULL, 7)
+ON CONFLICT ON CONSTRAINT uq_category_attribute DO NOTHING;
 
 -- ─── LAPTOP ───
 INSERT INTO category_attributes (category_id, name, label, field_type, options, is_required, unit, sort_order)
@@ -92,7 +93,8 @@ VALUES
 
     ((SELECT id FROM categories WHERE slug = 'laptop'),
      'ekran_karti', 'Ekran Kartı', 'TEXT', NULL,
-     false, NULL, 5);
+     false, NULL, 5)
+ON CONFLICT ON CONSTRAINT uq_category_attribute DO NOTHING;
 
 -- ─── APPLE TELEFONLAR ───
 INSERT INTO category_attributes (category_id, name, label, field_type, options, is_required, unit, sort_order)
@@ -109,7 +111,8 @@ VALUES
     ((SELECT id FROM categories WHERE slug = 'apple-telefonlar'),
      'garanti_durumu', 'Garanti Durumu', 'SELECT',
      '["Garantisi Var","Garantisi Yok","Apple Care+"]',
-     false, NULL, 3);
+     false, NULL, 3)
+ON CONFLICT ON CONSTRAINT uq_category_attribute DO NOTHING;
 
 -- ─── SAMSUNG TELEFONLAR ───
 INSERT INTO category_attributes (category_id, name, label, field_type, options, is_required, unit, sort_order)
@@ -126,7 +129,8 @@ VALUES
     ((SELECT id FROM categories WHERE slug = 'samsung-telefonlar'),
      'garanti_durumu', 'Garanti Durumu', 'SELECT',
      '["Garantisi Var","Garantisi Yok"]',
-     false, NULL, 3);
+     false, NULL, 3)
+ON CONFLICT ON CONSTRAINT uq_category_attribute DO NOTHING;
 
 -- ─── KOLTUK & KANEPE ───
 INSERT INTO category_attributes (category_id, name, label, field_type, options, is_required, unit, sort_order)
@@ -143,7 +147,8 @@ VALUES
 
     ((SELECT id FROM categories WHERE slug = 'koltuk-kanepe'),
      'renk', 'Renk', 'TEXT', NULL,
-     false, NULL, 3);
+     false, NULL, 3)
+ON CONFLICT ON CONSTRAINT uq_category_attribute DO NOTHING;
 
 -- ─── OYUN KONSOLLARI ───
 INSERT INTO category_attributes (category_id, name, label, field_type, options, is_required, unit, sort_order)
@@ -161,4 +166,5 @@ VALUES
     ((SELECT id FROM categories WHERE slug = 'oyun-konsollari'),
      'kol_sayisi', 'Kol Sayısı', 'SELECT',
      '["1","2","3","4"]',
-     true, NULL, 3);
+     true, NULL, 3)
+ON CONFLICT ON CONSTRAINT uq_category_attribute DO NOTHING;
