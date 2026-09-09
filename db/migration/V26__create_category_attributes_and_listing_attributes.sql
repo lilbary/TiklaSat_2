@@ -17,22 +17,14 @@ CREATE TABLE IF NOT EXISTS category_attributes (
 );
 
 -- aramalar kolaylassın diye indexledik
-<<<<<<<< HEAD:db/migration/V25__create_category_attributes_and_listing_attributes.sql
 CREATE INDEX IF NOT EXISTS idx_category_attributes_category ON category_attributes(category_id);
-========
-CREATE INDEX idx_category_attributes_category ON category_attributes(category_id);
->>>>>>>> 7a4e51406655b2723e3e515141fb8976bb247f48:db/migration/V26__create_category_attributes_and_listing_attributes.sql
 
 
 -- 2) listings tablosuna JSONB attributes kolonu
 -- ============================================================
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS attributes JSONB DEFAULT '{}'::jsonb;
 
-<<<<<<<< HEAD:db/migration/V25__create_category_attributes_and_listing_attributes.sql
 CREATE INDEX IF NOT EXISTS idx_listings_attributes_gin ON listings USING GIN (attributes);
-========
-CREATE INDEX idx_listings_attributes_gin ON listings USING GIN (attributes);
->>>>>>>> 7a4e51406655b2723e3e515141fb8976bb247f48:db/migration/V26__create_category_attributes_and_listing_attributes.sql
 -- gın indeksi kullanılıyo.
 
 
