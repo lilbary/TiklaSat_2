@@ -28,12 +28,22 @@ public class AuthService {
     // 1. YENİ KULLANICI KAYDI
     public AuthResponse register(UserRegisterDto request) {
         
-        if (userRepository.existsByEmail(request.getEmail())) {
+        // BR-U-001: e-posta duyarsız benzersiz olduğu için normalize edilmiş
+        // haliyle saklıyoruz. Arama zaten duyarsız (UserRepository), ama veriyi
+        // tek biçimde tutmak token'daki e-postanın da tutarlı olmasını sağlıyor.
+        //
+        // Locale.ROOT ZORUNLU: sistem locale'i tr_TR olduğunda düz toLowerCase()
+        // Türkçe kurallarını uygular ve "TIKLASAT" → "tıklasat" (noktasız ı) olur.
+        // E-posta adresi bambaşka bir adrese dönüşür, çakışma tespit edilemez.
+        String email = request.getEmail() == null ? null
+                : request.getEmail().trim().toLowerCase(java.util.Locale.ROOT);
+
+        if (userRepository.existsByEmail(email)) {
             throw new ConflictException("Bu e-posta adresi zaten kullanılıyor!");
         }
 
         User user = new User();
-        user.setEmail(request.getEmail());
+        user.setEmail(email);
         user.setFullName(request.getFullName());
         user.setPhone(request.getPhone());
         user.addRole(Role.BUYER); // BR-U-003: kayıt olan herkes otomatik BUYER

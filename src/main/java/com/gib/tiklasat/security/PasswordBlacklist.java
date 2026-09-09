@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -35,7 +36,9 @@ public class PasswordBlacklist {
 
             String line;
             while ((line = reader.readLine()) != null) {
-                String entry = line.trim().toLowerCase();
+                // Locale.ROOT: tr_TR locale'inde düz toLowerCase() "I" harfini "ı"
+                // yapar; liste ile kontrol farklı sonuç verirdi.
+                String entry = line.trim().toLowerCase(Locale.ROOT);
                 if (entry.isEmpty() || entry.startsWith("#")) continue;
                 loaded.add(entry);
             }
@@ -51,7 +54,7 @@ public class PasswordBlacklist {
     /** Parola listede mi? Karşılaştırma büyük/küçük harf duyarsız. */
     public boolean contains(String password) {
         if (password == null) return false;
-        return blacklist.contains(password.toLowerCase());
+        return blacklist.contains(password.toLowerCase(Locale.ROOT));
     }
 
     public int size() {
