@@ -30,6 +30,10 @@ import java.util.Optional;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import com.gib.tiklasat.entity.CategoryAttribute;
+import com.gib.tiklasat.repository.CategoryAttributeRepository;
+import java.util.Map;
+
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +45,7 @@ public class ListingService {
     private final AuctionRepository auctionRepository;
     private final BidRepository bidRepository;
     private final CacheManager cacheManager;
+    private final CategoryAttributeRepository categoryAttributeRepository;
 
     // NOT: Burası @Cacheable OLAMAZ — Page (PageImpl) Redis'e yazılabiliyor ama
     // geri okunurken Jackson'ın kurabileceği bir constructor'ı olmadığı için
@@ -65,9 +70,11 @@ public class ListingService {
         Listing listing = new Listing();
         listing.setTitle(dto.getTitle());
         listing.setDescription(dto.getDescription());
+
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         listing.setCategory(category);
+
         User seller = userRepository.findByEmail(sellerEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
         listing.setSeller(seller);
@@ -78,9 +85,50 @@ public class ListingService {
         // Kullanıcı managed durumda; dirty checking commit sırasında INSERT'i kendisi atar.
         seller.addRole(Role.SELLER);
 
+        //************************************************************************************
+
+        // Frontend'den gelen dinamik özellikleri al (Örn: {"kilometre": 45000})
+        Map<String, Object> attributes = dto.getAttributes();
+        if (attributes == null) {
+            attributes = Map.of(); // Boşsa boş map yap ki hata vermesin
+        }
+
+        // 1. Bu kategori için "zorunlu" olan alanların şablonunu çek -- Miras alma mevzusu burda da gecerli
+        List<CategoryAttribute> requiredAttrs =
+                categoryAttributeRepository.findByCategoryIdOrderBySortOrderAsc(category.getId());
+
+        if (requiredAttrs.isEmpty() && category.getParent() != null) {
+            Category parent = category.getParent();
+            while (parent != null && requiredAttrs.isEmpty()) {
+                requiredAttrs = categoryAttributeRepository
+                        .findByCategoryIdOrderBySortOrderAsc(parent.getId());
+                parent = parent.getParent();
+            }
+        }
+
+        // 2. Zorunlu alanların gerçekten doldurulup doldurulmadığını kontrol et
+        for (CategoryAttribute attr : requiredAttrs) {//tum kurallara bakalım
+            if (attr.isRequired()) {//bu ozellik zorunluysa buraya gir
+                Object value = attributes.get(attr.getName());
+
+                // Eğer veri gelmediyse veya boş string ise hata fırlat
+                if (value == null || value.toString().isBlank()) {
+                    throw new IllegalArgumentException("'" + attr.getLabel() + "' alanı zorunludur.");
+                }
+            }
+        }
+
+        // 3. Her şey tamamsa JSONB kolonuna kaydetmek üzere Entity'ye set et
+        listing.setAttributes(attributes);
+
+        //***********************************************************************
+
         listing = listingRepository.save(listing);
         return ListingDto.fromEntity(listing);
     }
+
+
+
     /*
     @Transactional
     @CacheEvict(value = "listings_by_category", allEntries = true)

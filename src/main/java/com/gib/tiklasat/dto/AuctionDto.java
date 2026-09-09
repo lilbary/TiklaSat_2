@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.Map;
 
 @Data
 public class AuctionDto {
@@ -27,6 +28,7 @@ public class AuctionDto {
     private Instant endTime;
     private String status;
     private List<String> imageUrls;   // İlana ait fotoğraf URL'leri
+    private Map<String, Object> attributes;
 
     public static AuctionDto fromEntity(Auction auction, BigDecimal currentPrice) {
         AuctionDto dto = new AuctionDto();
@@ -53,6 +55,7 @@ public class AuctionDto {
                 .map(ListingImage::getImageUrl)
                 .toList();
         dto.setImageUrls(urls);
+        dto.setAttributes(auction.getListing().getAttributes());
 
         return dto;
     }

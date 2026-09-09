@@ -1,5 +1,6 @@
 package com.gib.tiklasat.service;
 
+import com.gib.tiklasat.dto.CategoryAttributeDto;
 import com.gib.tiklasat.dto.CategoryDto;
 import com.gib.tiklasat.entity.Category;
 import com.gib.tiklasat.exception.ResourceNotFoundException;
@@ -14,6 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import com.gib.tiklasat.dto.CategoryAttributeDto;
+import com.gib.tiklasat.entity.CategoryAttribute;
+import com.gib.tiklasat.repository.CategoryAttributeRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +25,7 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final ListingRepository listingRepository;
+    private final CategoryAttributeRepository categoryAttributeRepository;
 
     @Transactional(readOnly = true)
     @Cacheable(value = "categories")
@@ -45,6 +50,30 @@ public class CategoryService {
     public List<CategoryDto> getSubCategories(UUID parentId) {
         return categoryRepository.findByParentIdAndIsActiveTrue(parentId).stream()
                 .map(CategoryDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<CategoryAttributeDto> getCategoryAttributes(UUID categoryId) {
+        // 1. Önce kullanıcının seçtiği kategorinin özelliklerini getir
+        List<CategoryAttribute> attributes =
+                categoryAttributeRepository.findByCategoryIdOrderBySortOrderAsc(categoryId);
+        // 2. Eğer kendi özelliği yoksa (boş dönerse), bir üst kategoriye bak
+        if (attributes.isEmpty()) {
+            Category category = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Kategori bulunamadı"));
+            Category parent = category.getParent();
+
+            // Üst kategori olduğu sürece ve özellik bulamadığımız sürece yukarı tırman
+            while (parent != null && attributes.isEmpty()) {
+                attributes = categoryAttributeRepository
+                        .findByCategoryIdOrderBySortOrderAsc(parent.getId());
+                parent = parent.getParent();
+            }
+        }
+        // Bulunan entity listesini DTO'ya çevir ve dön
+        return attributes.stream()
+                .map(CategoryAttributeDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
@@ -144,4 +173,5 @@ public class CategoryService {
     private String generateSlug(String name) {
         return name.toLowerCase().replaceAll("[^a-z0-9]+", "-");
     }
+
 }
