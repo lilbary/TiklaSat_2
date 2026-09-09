@@ -26,6 +26,9 @@ function CreateAuctionPage() {
   const [categoryAttributes, setCategoryAttributes] = useState([])
   const [attributeValues, setAttributeValues] = useState({})
 
+  // Kullanıcının kendi ekleyeceği ekstra özellikler (Anahtar-Değer)
+  const [customAttributes, setCustomAttributes] = useState([])
+
   // Fotoğraflar
   const [selectedFiles, setSelectedFiles] = useState([])
   const [previewUrls, setPreviewUrls] = useState([])
@@ -105,6 +108,22 @@ function CreateAuctionPage() {
     }))
   }
 
+  function addCustomAttribute() {
+    setCustomAttributes(prev => [...prev, { key: '', value: '' }])
+  }
+
+  function removeCustomAttribute(index) {
+    setCustomAttributes(prev => prev.filter((_, i) => i !== index))
+  }
+
+  function handleCustomAttributeChange(index, field, val) {
+    setCustomAttributes(prev => {
+      const updated = [...prev]
+      updated[index] = { ...updated[index], [field]: val }
+      return updated
+    })
+  }
+
   function handleFileChange(e) {
     const files = Array.from(e.target.files)
     if (files.length > 10) {
@@ -154,6 +173,14 @@ function CreateAuctionPage() {
     const token = localStorage.getItem('token')
 
     try {
+      // Dinamik özellikler + kullanıcının kendi eklediği ekstra özellikleri birleştir
+      const finalAttributes = { ...attributeValues }
+      customAttributes.forEach(attr => {
+        if (attr.key.trim() && attr.value.trim()) {
+          finalAttributes[attr.key.trim()] = attr.value.trim()
+        }
+      })
+
       // 1. İlanı oluştur
       const listingRes = await fetch('/api/listings', {
         method: 'POST',
@@ -162,7 +189,7 @@ function CreateAuctionPage() {
           title, 
           description, 
           categoryId,
-          attributes: attributeValues 
+          attributes: finalAttributes 
         }),
       })
 
@@ -356,6 +383,47 @@ function CreateAuctionPage() {
               ))}
             </div>
           )}
+
+          {/* KULLANICI ÖZEL ÖZELLİK EKLEME ALANI */}
+          <div className="pt-4 border-t mt-6 space-y-4">
+            <div className="flex justify-between items-center">
+              <h4 className="font-semibold text-slate-800">Ekstra Özellik Ekle</h4>
+              <button 
+                type="button" 
+                onClick={addCustomAttribute}
+                className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition-colors"
+              >
+                + Yeni Özellik
+              </button>
+            </div>
+            <p className="text-xs text-slate-500">İlanınıza ait ek detayları buradan ekleyebilirsiniz.</p>
+
+            {customAttributes.map((attr, idx) => (
+              <div key={idx} className="flex gap-2 items-center">
+                <input
+                  type="text"
+                  placeholder="Özellik (Örn: Renk)"
+                  value={attr.key}
+                  onChange={(e) => handleCustomAttributeChange(idx, 'key', e.target.value)}
+                  className="w-1/2 rounded-lg bg-white border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder="Değer (Örn: Siyah)"
+                  value={attr.value}
+                  onChange={(e) => handleCustomAttributeChange(idx, 'value', e.target.value)}
+                  className="w-1/2 rounded-lg bg-white border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 outline-none"
+                />
+                <button 
+                  type="button" 
+                  onClick={() => removeCustomAttribute(idx)}
+                  className="text-red-400 hover:text-red-600 hover:bg-red-50 px-2 py-2 rounded-lg font-bold transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* SAĞ KOLON: Fiyat, Fotoğraf, Ayarlar */}
@@ -474,6 +542,12 @@ function CreateAuctionPage() {
                   <span className="font-medium text-slate-900">
                     {attributeValues[attr.name] ? `${attributeValues[attr.name]} ${attr.unit || ''}` : '-'}
                   </span>
+                </li>
+              ))}
+              {customAttributes.filter(a => a.key.trim() && a.value.trim()).map((attr, idx) => (
+                <li key={`custom-${idx}`} className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500">{attr.key}</span>
+                  <span className="font-medium text-slate-900">{attr.value}</span>
                 </li>
               ))}
             </ul>

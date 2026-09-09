@@ -86,6 +86,7 @@ function AuctionDetailPage() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [selectedImage, setSelectedImage] = useState(0) // Hangi fotoğraf büyük gösteriliyor
+  const [categoryAttrKeys, setCategoryAttrKeys] = useState([]) // Kategori şablonundaki özellik isimleri
 
   // 1. Sayfa açılınca artırmanın bilgisini ve teklif geçmişini çek
   useEffect(() => {
@@ -94,6 +95,14 @@ function AuctionDetailPage() {
       .then((data) => {
         setAuction(data)
         setCurrentPrice(data.currentPrice)
+
+        // Kategori özellik şablonunu çek — temel/ekstra ayrımı için
+        if (data.categoryId) {
+          fetch(`/api/categories/${data.categoryId}/attributes`)
+            .then((res) => res.json())
+            .then((attrs) => setCategoryAttrKeys(attrs.map(a => a.name)))
+            .catch(() => setCategoryAttrKeys([]))
+        }
       })
 
     fetch(`/api/bids/auction/${id}`)
@@ -221,6 +230,23 @@ function AuctionDetailPage() {
               <p className="whitespace-pre-line text-sm text-slate-600">
                 {auction.listingDescription}
               </p>
+            </div>
+          )}
+
+          {/* İLAN ÖZELLİKLERİ */}
+          {auction.attributes && Object.keys(auction.attributes).length > 0 && (
+            <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+              <h2 className="mb-3 text-sm font-semibold text-slate-900">Özellikler</h2>
+              <ul className="divide-y divide-slate-100">
+                {Object.entries(auction.attributes).map(([key, val]) => (
+                  <li key={key} className="flex items-center justify-between py-3 text-sm">
+                    <span className="font-medium text-slate-500 capitalize">
+                      {key.replace(/_/g, ' ')}
+                    </span>
+                    <span className="font-semibold text-slate-900">{String(val)}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
