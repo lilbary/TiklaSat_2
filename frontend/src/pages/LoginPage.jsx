@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
   const { login } = useAuth()
@@ -17,7 +18,7 @@ function LoginPage() {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, rememberMe }),
       })
 
       if (!response.ok) {
@@ -70,12 +71,17 @@ function LoginPage() {
 
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2 text-slate-600">
-              <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500" />
+              <input 
+                type="checkbox" 
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500" 
+              />
               Beni hatırla
             </label>
-            <a href="#" className="font-medium text-red-600 hover:underline">
+            <Link to="/sifremi-unuttum" className="font-medium text-red-600 hover:underline">
               Şifremi unuttum
-            </a>
+            </Link>
           </div>
 
           <p className="text-xs text-slate-500">

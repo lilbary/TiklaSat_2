@@ -13,6 +13,8 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminModerationPage from './pages/admin/AdminModerationPage'
 import AdminCategoriesPage from './pages/admin/AdminCategoriesPage'
 import PublicProfilePage from './pages/PublicProfilePage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/giris" element={<LoginPage />} />
         <Route path="/kayit" element={<RegisterPage />} />
+        <Route path="/sifremi-unuttum" element={<ForgotPasswordPage />} />
+        <Route path="/sifre-sifirla" element={<ResetPasswordPage />} />
         <Route path="/artirma/:id" element={<AuctionDetailPage />} />
         <Route path="/admin/kullanicilar" element={<AdminUsersPage />} />
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
