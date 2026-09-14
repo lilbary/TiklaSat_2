@@ -75,6 +75,9 @@ public class SecurityConfig {
                         // 2.5. WEBSOCKET BAĞLANTISI (SADECE DİNLEME) HERKESE AÇIK
                         .requestMatchers("/ws-auction/**").permitAll()
 
+                        // SWAGGER UI HERKESE AÇIK
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
                         // 3. ADMIN PANELİ SADECE "ADMIN" ROLÜNE SAHİP OLANLARA AÇIK
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
