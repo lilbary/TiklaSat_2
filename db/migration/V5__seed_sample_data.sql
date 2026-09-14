@@ -1,20 +1,9 @@
 -- =====================================================================
--- TıklaSat · V5 · Örnek Veri (Seed Data)
+-- TıklaSat · V5 · Temel Kategori Verileri
 -- ---------------------------------------------------------------------
--- Tüm ID'ler gen_random_uuid() ile üretilir. Diğer migration'lar
--- referans alırken email / slug / title üzerinden subquery kullanır.
+-- Sistemin çalışması için gerekli temel kategori ağacı.
+-- (Örnek veriler R__seed_sample_data.sql dosyasına taşınmıştır)
 -- =====================================================================
-
--- Demo satıcı
-INSERT INTO users (id, email, full_name, password_hash, phone, created_at)
-VALUES (
-    gen_random_uuid(),
-    'demo.satici@tiklasat.com',
-    'Demo Satıcı',
-    'seed-not-a-real-hash',
-    '5550000000',
-    now()
-);
 
 -- ========================================
 -- KATEGORİ AĞACI — SEVİYE 0 (KÖKLER)
@@ -259,36 +248,3 @@ INSERT INTO categories (id, parent_id, name, slug, created_at) VALUES
     (gen_random_uuid(), (SELECT id FROM categories WHERE slug = 'koltuk-kanepe'), 'Köşe Koltuk',       'kose-koltuk',      now()),
     (gen_random_uuid(), (SELECT id FROM categories WHERE slug = 'koltuk-kanepe'), 'Yataklı Kanepe',    'yatakli-kanepe',   now()),
     (gen_random_uuid(), (SELECT id FROM categories WHERE slug = 'koltuk-kanepe'), 'Tekli Koltuk',      'tekli-koltuk',     now());
-
-
--- ========================================
--- ÖRNEK İLANLAR
--- ========================================
-INSERT INTO listings (id, seller_id, category_id, title, description, status, view_count, created_at) VALUES
-    (gen_random_uuid(),
-     (SELECT id FROM users WHERE email = 'demo.satici@tiklasat.com'),
-     (SELECT id FROM categories WHERE slug = 'apple-telefonlar'),
-     'iPhone 14 Pro 256GB Uzay Grisi',
-     'Kutulu, faturalı, garanti süresi devam ediyor. Ekran koruyucu ve kılıfla birlikte kullanıldı, hiç çizik yok.',
-     'APPROVED', 12, now()),
-
-    (gen_random_uuid(),
-     (SELECT id FROM users WHERE email = 'demo.satici@tiklasat.com'),
-     (SELECT id FROM categories WHERE slug = 'otomobil'),
-     '2019 Model Otomatik Vites Sedan',
-     'Tek elden, hasar kaydı yok, bakımları yetkili serviste yapıldı. 85.000 km''de.',
-     'APPROVED', 34, now()),
-
-    (gen_random_uuid(),
-     (SELECT id FROM users WHERE email = 'demo.satici@tiklasat.com'),
-     (SELECT id FROM categories WHERE slug = 'mobilya'),
-     'Vintage Ahşap Yemek Masası Takımı',
-     '6 kişilik, masif meşe, 1980''ler dönemine ait, restore edilmiş.',
-     'APPROVED', 7, now()),
-
-    (gen_random_uuid(),
-     (SELECT id FROM users WHERE email = 'demo.satici@tiklasat.com'),
-     (SELECT id FROM categories WHERE slug = 'erkek-mont'),
-     'Sınırlı Sayı Deri Ceket',
-     'Orijinal İtalyan derisi, M beden, hiç giyilmedi, etiketli.',
-     'APPROVED', 3, now());
