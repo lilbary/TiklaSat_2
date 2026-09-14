@@ -14,7 +14,8 @@
 DELETE FROM bids WHERE bidder_id IN (SELECT id FROM users WHERE email LIKE 'demo.%@tiklasat.com')
                     OR auction_id IN (SELECT a.id FROM auctions a JOIN listings l ON a.listing_id = l.id JOIN users u ON l.seller_id = u.id WHERE u.email LIKE 'demo.%@tiklasat.com');
 
-DELETE FROM notifications WHERE user_id IN (SELECT id FROM users WHERE email LIKE 'demo.%@tiklasat.com');
+DELETE FROM notifications WHERE user_id IN (SELECT id FROM users WHERE email LIKE 'demo.%@tiklasat.com')
+                             OR auction_id IN (SELECT a.id FROM auctions a JOIN listings l ON a.listing_id = l.id JOIN users u ON l.seller_id = u.id WHERE u.email LIKE 'demo.%@tiklasat.com');
 DELETE FROM favorites WHERE user_id IN (SELECT id FROM users WHERE email LIKE 'demo.%@tiklasat.com')
                          OR auction_id IN (SELECT a.id FROM auctions a JOIN listings l ON a.listing_id = l.id JOIN users u ON l.seller_id = u.id WHERE u.email LIKE 'demo.%@tiklasat.com');
 

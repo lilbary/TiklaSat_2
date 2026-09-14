@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TıklaSat Kural Denetimi</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root {
+    --paper: #faf6f0;
+    --paper-raised: #ffffff;
+    --ink: #211d18;
+    --ink-soft: #4a4238;
+    --muted: #8a8072;
+    --line: #e6ddcd;
+    --line-strong: #d8cdb8;
+    --accent: #c33a2b;
+    --accent-soft: #f4ded9;
+    --good: #3e7a4b;
+    --good-soft: #e2ede2;
+    --warn: #a9721b;
+    --warn-soft: #f2e6d1;
+    --gone: #8a3b3b;
+    --gone-soft: #f2dfdc;
+    --shadow: 0 1px 2px rgba(33,29,24,0.04), 0 8px 24px -12px rgba(33,29,24,0.12);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #1a1712;
+      --paper-raised: #221e18;
+      --ink: #f3ece1;
+      --ink-soft: #cabfae;
+      --muted: #93897a;
+      --line: #38322a;
+      --line-strong: #4a4236;
+      --accent: #e2685a;
+      --accent-soft: #3a231f;
+      --good: #7cb787;
+      --good-soft: #24322a;
+      --warn: #d9a44f;
+      --warn-soft: #362c1c;
+      --gone: #e08b83;
+      --gone-soft: #382320;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #1a1712;
+    --paper-raised: #221e18;
+    --ink: #f3ece1;
+    --ink-soft: #cabfae;
+    --muted: #93897a;
+    --line: #38322a;
+    --line-strong: #4a4236;
+    --accent: #e2685a;
+    --accent-soft: #3a231f;
+    --good: #7cb787;
+    --good-soft: #24322a;
+    --warn: #d9a44f;
+    --warn-soft: #362c1c;
+    --gone: #e08b83;
+    --gone-soft: #382320;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 56px 24px 120px;
+  }
+
+  /* ---------- Header ---------- */
+  .masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 32px;
+    margin-bottom: 40px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .kicker {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(32px, 5vw, 44px);
+    line-height: 1.08;
+    margin: 0;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .dek {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 4px 0 0;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin-top: 14px;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  /* ---------- Summary strip ---------- */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .stat {
+    background: var(--paper-raised);
+    padding: 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .stat .n {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 30px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .stat .n.good { color: var(--good); }
+  .stat .n.warn { color: var(--warn); }
+  .stat .n.gone { color: var(--gone); }
+  .stat .delta {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 11.5px;
+    color: var(--good);
+    font-weight: 600;
+  }
+  .stat .delta.down { color: var(--good); }
+  .stat .l {
+    font-size: 12.5px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+  .summary-note {
+    font-size: 13.5px;
+    color: var(--muted);
+    margin: 0 0 48px;
+  }
+
+  /* ---------- Section headers ---------- */
+  section.brgroup { margin-bottom: 44px; }
+  .brgroup > h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 22px;
+    margin: 0 0 4px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  .brgroup > h2 .tag {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 2px 8px;
+    border-radius: 5px;
+    letter-spacing: 0.02em;
+  }
+  .brgroup > h2 .tag.neutral { color: var(--ink-soft); background: var(--line); }
+  .brgroup > .sub {
+    font-size: 13.5px;
+    color: var(--muted);
+    margin: 8px 0 18px;
+  }
+
+  /* ---------- Rule rows ---------- */
+  .rule {
+    display: grid;
+    grid-template-columns: 100px 1fr auto;
+    gap: 14px;
+    align-items: start;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .rule:last-child { border-bottom: none; }
+  .rule .id {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12.5px;
+    color: var(--muted);
+    padding-top: 3px;
+  }
+  .rule .body p {
+    margin: 0;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .rule .body .finding {
+    margin-top: 5px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+  }
+  .rule .body .finding code,
+  .plist .txt .finding code,
+  .rule .body .fixed code {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 0.92em;
+    background: var(--line);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+  .rule .body .fixed {
+    margin-top: 5px;
+    font-size: 13.5px;
+    color: var(--good);
+    border-left: 2px solid var(--good);
+    padding-left: 10px;
+  }
+  .chip {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    padding: 3px 9px;
+    border-radius: 999px;
+    margin-top: 2px;
+  }
+  .chip.good { color: var(--good); background: var(--good-soft); }
+  .chip.warn { color: var(--warn); background: var(--warn-soft); }
+  .chip.gone { color: var(--gone); background: var(--gone-soft); }
+
+  /* ---------- Changelog ---------- */
+  .changelog {
+    background: var(--good-soft);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--good);
+    border-radius: 10px;
+    padding: 26px 28px;
+    margin-bottom: 32px;
+  }
+  .changelog h2 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 21px;
+    margin: 0 0 4px;
+  }
+  .changelog > .sub { font-size: 13.5px; color: var(--muted); margin: 0 0 18px; }
+  .clist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+  .clist li { display: grid; grid-template-columns: 88px 1fr; gap: 12px; align-items: start; }
+  .clist .code {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--good);
+    padding-top: 2px;
+  }
+  .clist .txt p { margin: 0; font-size: 15px; }
+  .clist .txt .finding { margin-top: 4px; font-size: 13.5px; color: var(--ink-soft); }
+  .clist .txt .finding code {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 0.92em;
+    background: var(--line);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  /* ---------- Priority callout ---------- */
+  .priority {
+    background: var(--paper-raised);
+    border: 1px solid var(--line-strong);
+    border-left: 4px solid var(--accent);
+    border-radius: 10px;
+    padding: 26px 28px;
+    margin-bottom: 48px;
+    box-shadow: var(--shadow);
+  }
+  .priority h2 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 21px;
+    margin: 0 0 4px;
+  }
+  .priority > .sub {
+    font-size: 13.5px;
+    color: var(--muted);
+    margin: 0 0 18px;
+  }
+  .plist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+  .plist li { display: flex; gap: 12px; }
+  .plist .num {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    padding-top: 1px;
+    flex-shrink: 0;
+    width: 22px;
+  }
+  .plist .txt p { margin: 0; font-size: 15px; }
+  .plist .txt .finding { margin-top: 4px; font-size: 13.5px; color: var(--ink-soft); }
+
+  /* ---------- Scope note ---------- */
+  .scope {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 8px 0 48px;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .scope strong { color: var(--ink); }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  @media (max-width: 560px) {
+    .rule { grid-template-columns: 1fr; gap: 6px; }
+    .rule .id { padding-top: 0; }
+    .summary { grid-template-columns: repeat(2, 1fr); }
+    .clist li { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="masthead">
+    <span class="kicker">docs/01-requirements/business-rules.md karşılaştırması</span>
+    <h1>TıklaSat, dokümanla ne kadar örtüşüyor?</h1>
+    <p class="dek">75 iş kuralının (BR-U → BR-K) her biri koddaki karşılığıyla tek tek karşılaştırıldı. Aşağıda hem yapılmamış özellikler hem de "yapılmış ama dokümandan farklı" gerçek uyumsuzluklar var.</p>
+    <div class="meta-row">
+      <span>KAYNAK: business-rules.md v1.0</span>
+      <span>KAPSAM: BR-U, BR-C, BR-L, BR-A, BR-B, BR-N, BR-S, BR-K</span>
+      <span>GÜNCELLEME: 9 EYLÜL 2026</span>
+    </div>
+  </div>
+
+  <div class="summary">
+    <div class="stat"><span class="n">75</span><span class="l">toplam kural</span></div>
+    <div class="stat"><span class="n good">30</span><span class="delta">+8</span><span class="l">uygulanmış</span></div>
+    <div class="stat"><span class="n warn">17</span><span class="delta down">−1</span><span class="l">kısmi / farklı</span></div>
+    <div class="stat"><span class="n gone">23</span><span class="delta down">−7</span><span class="l">hiç yok</span></div>
+  </div>
+  <p class="summary-note">Değişim okları 3 Eylül'deki ilk denetime göre. Sayılar ZORUNLU + OLMALI seviyesindeki kuralları kapsıyor; 1 kural bilerek v2'ye ertelenmiş (BR-B-013), 1 kural yerel ortamda değerlendirilemez (BR-S-005, HTTPS canlıda kontrol edilmeli).</p>
+
+  <div class="changelog">
+    <h2>İlk denetimden bu yana kapananlar</h2>
+    <p class="sub">Dokuz kural kapandı: dördü öncelikli bulgu listesinden, beşi kullanıcı/kimlik bölümünden</p>
+    <ul class="clist">
+      <li>
+        <span class="code">BR-B-003</span>
+        <div class="txt">
+          <p><strong>Teklif artış tablosu artık dokümanla birebir</strong></p>
+          <div class="finding"><code>calculateMinIncrement</code> beş kademeyi de doğru uyguluyor: 25 / 100 / 500 / 2500 ve 500.000 üstü için <code>%1</code> yüzdelik dilim. Canlı doğrulandı — 465.001 TL'ye 2.500 eklenerek 467.501 minimum çıkıyor.</div>
+        </div>
+      </li>
+      <li>
+        <span class="code">BR-C-002</span>
+        <div class="txt">
+          <p><strong>İlan artık yalnızca yaprak kategoriye açılabiliyor</strong></p>
+          <div class="finding">Oturumun başından beri duran bulgu kapandı. <code>CreateAuctionPage.jsx</code> kademeli (cascading) seçim kullanıyor ve <code>isLeafSelected</code> kontrolüyle en alt kategoriye inilmeden gönderime izin vermiyor.</div>
+        </div>
+      </li>
+      <li>
+        <span class="code">BR-A-004</span>
+        <div class="txt">
+          <p><strong>Süre üst sınırı 14 güne çekildi</strong></p>
+          <div class="finding">Hem backend'de gerçek kontrol var (<code>AuctionService:75</code>, 14 günü aşınca hata), hem de arayüzde "2 Hafta (14 Gün)" seçeneği eklendi. Eskiden 30 güne kadar izin veriliyordu.</div>
+        </div>
+      </li>
+      <li>
+        <span class="code">BR-U-001</span>
+        <div class="txt">
+          <p><strong>E-posta artık büyük/küçük harf duyarsız benzersiz</strong></p>
+          <div class="finding">Aynı adresle iki hesap açılabiliyordu — canlı olarak üretilip doğrulandı. Benzersizlik <code>lower(email)</code> üzerine taşındı (V25), arama duyarsız hale getirildi, kayıt normalize ediliyor. Doğrudan SQL ile bile çakışan kayıt eklenemiyor.</div>
+        </div>
+      </li>
+      <li>
+        <span class="code">BR-U-002<br>BR-U-003</span>
+        <div class="txt">
+          <p><strong>Çoklu rol sistemi kuruldu</strong></p>
+          <div class="finding">Roller dokümandaki dört değere çevrildi (<code>BUYER</code>, <code>SELLER</code>, <code>ADMIN</code>, <code>MODERATOR</code>) ve tek <code>role</code> kolonu <code>user_roles</code> bağlantı tablosuna dönüştü. Kayıt olan <code>BUYER</code>, ilk ilanını açan ayrıca <code>SELLER</code> alıyor; ayrı satıcı hesabı açılmıyor. Mevcut 12 kullanıcı taşındı — ilanı olan 6'sı geriye dönük <code>SELLER</code> aldı.</div>
+        </div>
+      </li>
+      <li>
+        <span class="code">BR-U-008</span>
+        <div class="txt">
+          <p><strong>Rol atama/geri alma uygulama içinden yapılabiliyor</strong></p>
+          <div class="finding">Rol vermenin tek yolu veritabanına elle SQL yazmaktı. Artık admin panelinden yönetilebilir; bir admin kendi ADMIN rolünü kaldıramıyor. Yedi senaryo canlı test edildi (rol verme/alma, kendi adminliğini kaldırma, admin olmayan ve kimliksiz erişim, başka adminin rolünü kaldırma).</div>
+        </div>
+      </li>
+      <li>
+        <span class="code">BR-U-006</span>
+        <div class="txt">
+          <p><strong>Parola gücü kuralı devreye girdi</strong></p>
+          <div class="finding">Kayıt formunda hiçbir parola doğrulaması yoktu. Artık en az 10 karakter, büyük+küçük harf ve rakam zorunlu; yaygın parola kara listesi kontrol ediliyor. Kural parola sıfırlama akışında da geçerli, yoksa oradan zayıf parolaya geçilebilirdi. Kayıt formunda anlık kural göstergesi var.</div>
+        </div>
+      </li>
+      <li>
+        <span class="code">BR-N-007</span>
+        <div class="txt">
+          <p><strong>Bildirim hatası artık teklifi geri alamıyor</strong></p>
+          <div class="finding">Bu oturumda yeniden kuruldu: bildirimler <code>@TransactionalEventListener(AFTER_COMMIT)</code> ile teklif <em>commit edildikten sonra</em> yazılıyor. Koruma artık her çağrı yerinde <code>try/catch</code> yazma disiplinine değil, olayların sırasına bağlı.</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="priority">
+    <h2>Önce bunlara bak</h2>
+    <p class="sub">Eksik özellik değil, şu an çalışan koddaki gerçek hatalar/uyumsuzluklar</p>
+    <ol class="plist">
+      <li>
+        <span class="num">01</span>
+        <div class="txt">
+          <p><strong>Kategori silme koruması hiç çalışmıyor</strong> — BR-C-007</p>
+          <div class="finding"><code>CategoryService.deleteCategory</code> içinde <code>existsByCategoryIdAndStatus(id, "ACTIVE")</code> çağrılıyor, ama <code>listings.status</code> kolonunda <code>ACTIVE</code> diye bir değer yok — mevcut değerler <code>DRAFT</code>, <code>APPROVED</code>, <code>DELETED</code>. Kontrol her zaman <code>false</code> dönüyor, dolayısıyla içinde onaylı ilan bulunan kategori pasife alınmak yerine hard delete'e gidiyor ve <code>fk_listings_category</code> ihlaliyle 500 hatası veriyor. Değer <code>"APPROVED"</code> olmalı.</div>
+        </div>
+      </li>
+      <li>
+        <span class="num">02</span>
+        <div class="txt">
+          <p><strong>Erişim token'ı 15 dakika ama arayüzde yenileme yok</strong> — BR-S-008</p>
+          <div class="finding">Backend tarafı tam: <code>RefreshTokenService</code> (Redis), <code>/api/auth/refresh</code>, <code>/api/auth/logout</code>, httpOnly çerez, "beni hatırla". Ama <code>frontend/src</code> içinde <code>refresh</code> veya <code>rememberMe</code> geçen tek satır yok. Yani kullanıcılar 15 dakikada bir sessizce yetkisiz kalıyor — test oturumunda 403 hataları olarak canlı gözlemlendi.</div>
+        </div>
+      </li>
+      <li>
+        <span class="num">03</span>
+        <div class="txt">
+          <p><strong>WebSocket aboneliklerinde yetkilendirme yok</strong> — BR-S-004 ihlali</p>
+          <div class="finding"><code>WebSocketConfig</code>'de <code>configureClientInboundChannel</code> override edilmemiş, hiçbir <code>ChannelInterceptor</code> yok. Bir kullanıcının <code>userId</code>'sini bilen biri <code>/topic/notifications.&lt;userId&gt;</code> kanalına abone olup o kişinin bildirimlerini canlı okuyabilir. Bağlantıda kimlik hiç taşınmıyor.</div>
+        </div>
+      </li>
+      <li>
+        <span class="num">04</span>
+        <div class="txt">
+          <p><strong>Gmail uygulama parolası depoda açık</strong> — BR-S genel</p>
+          <div class="finding"><code>application.properties</code> ve <code>AuthController</code> içinde e-posta hesabının uygulama parolası düz metin olarak duruyor ve GitHub'a push edilmiş durumda. Git geçmişinde kaldığı için dosyayı düzeltmek yetmez; parolanın iptal edilip yenilenmesi gerekiyor.</div>
+        </div>
+      </li>
+      <li>
+        <span class="num">05</span>
+        <div class="txt">
+          <p><strong>Parolalar Argon2id değil BCrypt ile hashleniyor</strong> — BR-S-001</p>
+          <div class="finding"><code>SecurityConfig:29</code> <code>new BCryptPasswordEncoder()</code> döndürüyor. BCrypt kabul görmüş güvenli bir algoritma, ama doküman özellikle Argon2id istiyor. İlk denetimden beri değişmedi.</div>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="scope">
+    <strong>Not:</strong> Dokümanın "Kapsam Dışı (v1)" bölümü ödeme/emanet/kargo, vekil teklif, site içi mesajlaşma, çoklu para birimi ve mobil uygulamayı <strong>bilinçli olarak</strong> v1 dışında bırakıyor. Bunlar aşağıdaki listede yok — zaten olmamaları gerektiği için "eksik" sayılmadı.
+  </div>
+
+  <section class="brgroup">
+    <h2><span class="tag neutral">EK</span> Dokümanda olmayan bulgular</h2>
+    <p class="sub">business-rules.md bir kural yazmıyor ama kodda düzeltilmesi gereken şeyler</p>
+
+    <div class="rule">
+      <span class="id">ÖLÇEK</span>
+      <div class="body"><p><code>listings.category_id</code> üzerinde index yok</p><div class="finding">Tabloda yalnızca <code>listings_pkey</code> ve başlık için bir trigram index'i var. <code>findByCategoryId</code> ve Bayram'ın yeni eklediği <code>existsByCategoryIdAndStatus</code> tam tablo taraması yapıyor. <code>categories.parent_id</code> de index'siz.</div></div>
+      <span class="chip warn">AÇIK</span>
+    </div>
+    <div class="rule">
+      <span class="id">ÖLÇEK</span>
+      <div class="body"><p>Outbox tablosunda işlenmiş kayıtlar hiç temizlenmiyor</p><div class="finding"><code>processed = true</code> olan satırlar sonsuza kadar birikiyor. Sorgu hızı etkilenmiyor (kısmi index sayesinde index küçük kalıyor) ama disk ve yedekleme süresi sürekli büyür. Örneğin 7 günden eski işlenmiş kayıtları silen bir görev gerekiyor.</div></div>
+      <span class="chip warn">AÇIK</span>
+    </div>
+    <div class="rule">
+      <span class="id">ÖLÇEK</span>
+      <div class="body"><p><code>closeExpiredAuctions</code> bildirimleri hâlâ tek tek gönderiyor</p><div class="finding">Bu oturumda <code>BidService</code> ve bitmek-üzere görevi toplu API'ye geçirildi, ama açık artırma kapanışı dört ayrı <code>createNotification</code> çağrısı yapıyor. 7 Eylül 11:55'te kapanan üç açık artırma altı ayrı transaction üretti.</div></div>
+      <span class="chip warn">AÇIK</span>
+    </div>
+    <div class="rule">
+      <span class="id">KOD</span>
+      <div class="body"><p><code>Category</code> entity'sinde yanıltıcı kolon adı</p><div class="finding"><code>@Column(name = "isActive")</code> yazıyor, migration ise <code>is_active</code> oluşturuyor. Spring Boot'un varsayılan adlandırma stratejisi camelCase'i snake_case'e çevirdiği için kazara çalışıyor; strateji değişirse <code>ddl-auto=validate</code> uygulamayı açılışta çökertir.</div></div>
+      <span class="chip warn">AÇIK</span>
+    </div>
+    <div class="rule">
+      <span class="id">KOD</span>
+      <div class="body"><p><code>findBySlugIn</code> pasif kategorileri filtrelemiyor</p><div class="finding">Kardeş sorgular <code>findByParentIsNullAndIsActiveTrue</code> biçiminde güncellendi ama bu metot atlandı. Pasife alınmış bir kategori ana sayfadaki "Bu Haftanın Kategorileri" bölümünde görünmeye devam eder.</div></div>
+      <span class="chip warn">AÇIK</span>
+    </div>
+  </section>
+
+  <section class="brgroup">
+    <h2><span class="tag neutral">PERF</span> Ölçek çalışması — bitmek üzere bildirimi</h2>
+    <p class="sub">7 Eylül'de tamamlandı; kural denetiminin dışında ama aynı kodu ilgilendiriyor</p>
+
+    <div class="rule">
+      <span class="id">V23</span>
+      <div class="body"><p><code>favorites(auction_id)</code> index'i eklendi</p><div class="finding">Mevcut <code>(user_id, auction_id)</code> index'i bu sorguda ancak tam tarama ile kullanılabiliyordu, çünkü <code>auction_id</code> baştaki kolon değil.</div><div class="fixed"><code>Bitmap Index Scan</code> → <code>Index Scan using idx_favorites_auction_id</code></div></div>
+      <span class="chip good">BİTTİ</span>
+    </div>
+    <div class="rule">
+      <span class="id">N+1</span>
+      <div class="body"><p>Döngü içindeki sorgular toplu hale getirildi</p><div class="finding"><code>@EntityGraph</code> ile ilan aynı sorguda geliyor, favoriler <code>findByAuctionIdIn</code> ile tek seferde çekilip <code>groupingBy</code> ile belleğe alınıyor.</div><div class="fixed">100 açık artırmalık turda 201 sorgu → 2 sorgu</div></div>
+      <span class="chip good">BİTTİ</span>
+    </div>
+    <div class="rule">
+      <span class="id">TX</span>
+      <div class="body"><p>Bildirimler commit sonrası tek transaction'da yazılıyor</p><div class="finding"><code>REQUIRES_NEW</code> döngü içinde çağrıldığı için her bildirim ayrı transaction açıyor, ana transaction bağlantısını tutarken havuzdan ikinci bir bağlantı isteniyordu. Hikari'nin varsayılan 10'luk havuzunda eşzamanlı isteklerde kilitlenme riski vardı.</div><div class="fixed">79 bildirimlik partide 80 transaction → 2; istek başına eşzamanlı bağlantı 2 → 1</div></div>
+      <span class="chip good">BİTTİ</span>
+    </div>
+    <div class="rule">
+      <span class="id">LIMIT</span>
+      <div class="body"><p>Tur başına iş sınırı kondu</p><div class="finding">Sorgu pencereye giren her şeyi çekiyordu. İş ShedLock'ın 50 saniyelik kilidini aşarsa ikinci sunucu aynı listeyi çekip aynı kullanıcılara ikinci kez bildirim gönderebilirdi.</div><div class="fixed"><code>Pageable</code> ile 500 satır, <code>ends_at</code> sıralı — en acil olanlar önce</div></div>
+      <span class="chip good">BİTTİ</span>
+    </div>
+  </section>
+
+  <section class="brgroup">
+    <h2><span class="tag">BR-U</span> Kullanıcı, Kimlik, Yetkilendirme</h2>
+    <p class="sub">Kimlik alanları, rol modeli, rol yönetimi ve parola kuralı kapandı; doğrulama (e-posta/telefon) ve hesap durumu tarafı hâlâ boş</p>
+
+    <div class="rule">
+      <span class="id">BR-U-001</span>
+      <div class="body"><p>E-posta/parola/ad-soyad/telefon zorunlu, e-posta büyük/küçük harf duyarsız benzersiz</p><div class="fixed">9 Eylül'de kapandı. Zorunluluk <code>@NotBlank</code>/<code>@Email</code> ile, duyarsızlık üç katmanda: V25'te <code>lower(email)</code> üzerinde benzersizlik index'i, <code>UserRepository</code>'de <code>lower()</code> karşılaştırması (21 çağrı yeri birden korunuyor), kayıtta normalize ederek saklama.</div><div class="finding">Yolda bir <code>tr_TR</code> locale hatası çıktı: düz <code>toLowerCase()</code> Türkçe kuralını uygulayıp <code>TIKLASAT</code> → <code>tıklasat</code> (noktasız ı) yapıyor, e-postayı bambaşka bir adrese çeviriyordu. <code>Locale.ROOT</code> eklendi; aynı hata parola kara listesinde de vardı, orası da düzeltildi.</div></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-U-002</span>
+      <div class="body"><p>Roller: BUYER, SELLER, ADMIN, MODERATOR</p><div class="fixed">7 Eylül'de kapandı — enum dört değere çevrildi. "Ziyaretçi" bilerek eklenmedi: doküman onu rol saymıyor.</div><div class="finding"><code>MODERATOR</code> tanımlı ama henüz hiçbir yerde kullanılmıyor; moderasyon <code>ADMIN</code> üzerinden yürüyor.</div></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-U-003</span>
+      <div class="body"><p>Herkes otomatik BUYER alır, ilk ilanla SELLER eklenir — ayrı satıcı hesabı yok</p><div class="fixed">7 Eylül'de kapandı — <code>user_roles</code> tablosu (V24), <code>Set&lt;Role&gt;</code>, kayıtta BUYER, ilan açınca SELLER. Canlı doğrulandı.</div><div class="finding">Not: roller token'dan okunuyor, dolayısıyla yeni eklenen SELLER kullanıcının elindeki bilete ancak yeniden giriş yapınca yansıyor.</div></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-U-004</span>
+      <div class="body"><p>E-posta doğrulanmadan teklif/ilan yasak, 24 saatlik link</p><div class="finding">E-posta doğrulama sistemi hiç yok, kayıt olan anında aktif.</div></div>
+      <span class="chip gone">YOK</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-U-005</span>
+      <div class="body"><p>İlan yayınlamak için ayrıca telefon doğrulaması gerekir</p></div>
+      <span class="chip gone">YOK</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-U-006</span>
+      <div class="body"><p>Parola ≥10 karakter, büyük/küçük/rakam, kara liste kontrolü</p><div class="fixed">7 Eylül'de kuruldu — <code>@StrongPassword</code> doğrulayıcısı, hem kayıtta hem parola sıfırlamada. Sekiz senaryo canlı test edildi.</div><div class="finding">Kara liste şu an <strong>98</strong> kayıt, doküman <strong>10.000</strong> istiyor — altyapı hazır, dosyanın doldurulması gerekiyor. Uzunluk ve karakter kuralları tam çalışıyor.</div></div>
+      <span class="chip warn">KISMİ</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-U-007</span>
+      <div class="body"><p>Hesap durumları: PENDING_VERIFICATION → ACTIVE → SUSPENDED/BANNED/ANONYMIZED</p></div>
+      <span class="chip gone">YOK</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-U-008</span>
+      <div class="body"><p>Sadece ADMIN rol atar, kendi adminliğini kaldıramaz</p><div class="fixed">9 Eylül'de kapandı — <code>POST/DELETE /api/admin/users/{id}/roles/{role}</code>. "Yalnızca ADMIN" için ek kod yazılmadı: <code>/api/admin/**</code> zaten <code>hasRole("ADMIN")</code> ile korunuyordu. Kendi ADMIN rolünü kaldırma girişimi 403 ile reddediliyor.</div><div class="finding">Kuralın gizli faydası: adminler birbirinin rolünü kaldırabildiği halde son admin kendini kaldıramadığı için sistem hiç adminsiz kalmıyor. Henüz arayüzü yok — admin panelinde rol yönetimi ekranı eklenmeli.</div></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-U-009</span>
+      <div class="body"><p>Silme talebi = anonimleştirme, fiziksel silme yok</p></div>
+      <span class="chip gone">YOK</span>
+    </div>
+  </section>
+
+  <section class="brgroup">
+    <h2><span class="tag">BR-C</span> Kategori ve Dinamik Özellikler</h2>
+    <p class="sub">Yaprak kategori kuralı kapandı; kategori yönetimi paneli geldi ama silme mantığında hata var</p>
+    <div class="rule">
+      <span class="id">BR-C-001</span>
+      <div class="body"><p>Kategori derinliği en fazla 4 seviye</p></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-C-002</span>
+      <div class="body"><p>İlan sadece yaprak kategoriye açılabilir</p><div class="fixed">7 Eylül'de kapandı — kademeli kategori seçimi ve <code>isLeafSelected</code> kontrolü eklendi.</div></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-C-003/004/005/006</span>
+      <div class="body"><p>Kategoriye özel dinamik alanlar (EAV) — km, model yılı, hafıza vb., admin panelinden tanımlanabilir</p><div class="finding"><code>ADR-0005</code> bu tasarımı belgeliyor ama koda hiç geçmemiş — kategori bazlı özel alan sistemi yok.</div></div>
+      <span class="chip gone">YOK</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-C-007</span>
+      <div class="body"><p>Aktif ilanı olan kategori silinemez, sadece pasife alınır</p><div class="finding">Altyapı kuruldu: <code>is_active</code> kolonu (V22), admin kategori sayfası, alt kategori kontrolü. Ama ilan kontrolü <strong>hatalı statü değeriyle</strong> yazıldığı için hiç çalışmıyor — öncelikli bulgu #1.</div></div>
+      <span class="chip warn">KISMİ</span>
+    </div>
+  </section>
+
+  <section class="brgroup">
+    <h2><span class="tag">BR-L</span> İlan</h2>
+    <div class="rule">
+      <span class="id">BR-L-001</span>
+      <div class="body"><p>Başlık 10–70 karakter</p><div class="finding">Frontend'de sadece <code>required</code> var, uzunluk sınırı hiç doğrulanmıyor.</div></div>
+      <span class="chip gone">YOK</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-L-002</span>
+      <div class="body"><p>Açıklama en fazla 3000 karakter</p></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-L-003</span>
+      <div class="body"><p>Fotoğraf: 1–15 adet, ≤5MB, JPEG/PNG/WEBP</p><div class="finding">Kod en fazla <strong>10</strong> fotoğrafla sınırlıyor (dokümanda 15). Dosya boyutu/format kontrolü de yok. İlk denetimden beri değişmedi.</div></div>
+      <span class="chip warn">FARKLI</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-L-004</span>
+      <div class="body"><p>Tam bir kapak fotoğrafı, seçilmezse ilk fotoğraf kapak olur</p></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-L-005</span>
+      <div class="body"><p>İlan konumu il + ilçe zorunlu</p><div class="finding">Konum alanı hiç yok, arama da konuma göre filtrelenemiyor.</div></div>
+      <span class="chip gone">YOK</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-L-006/007</span>
+      <div class="body"><p>İlan yaşam döngüsü DRAFT→PENDING_REVIEW→APPROVED/REJECTED, moderatör onayı + ret gerekçesi zorunlu</p><div class="finding">Moderasyon <code>Listing</code> değil <code>Auction</code> üzerinde kurulu, ret gerekçesi hiç alınmıyor.</div></div>
+      <span class="chip warn">FARKLI</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-L-008</span>
+      <div class="body"><p>Açık artırma başladıktan sonra başlık/açıklama/kategori/fotoğraf değiştirilemez</p><div class="finding"><code>ListingController</code>'da hiçbir güncelleme (PUT/PATCH) endpoint'i yok — kural bilinçli bir kontrolden değil, o özelliğin hiç var olmamasından "sağlanıyor".</div></div>
+      <span class="chip good">VAR (dolaylı)</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-L-009</span>
+      <div class="body"><p>Teklifsiz açık artırmayı satıcı iptal edebilir; teklif varsa sadece ADMIN, gerekçeyle</p><div class="finding">İlan silme özelliği satıcı tarafını doğru yapıyor (teklif varsa engelliyor) ama admin'in gerekçeli iptal etme yolu hiç yok.</div></div>
+      <span class="chip warn">KISMİ</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-L-010</span>
+      <div class="body"><p>Türkçe duyarlı tam metin arama</p><div class="finding">Şu anki arama sade <code>ILIKE '%terim%'</code> — gerçek full-text search (tsvector/GIN) değil.</div></div>
+      <span class="chip warn">FARKLI</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-L-011</span>
+      <div class="body"><p>İlanlar fiziksel silinmez, arşivlenir</p><div class="finding">Soft-delete tam bu ruhu taşıyor (durum güncelleniyor, satır silinmiyor) — sadece durum adı <code>DELETED</code>, dokümandaki <code>ARCHIVED</code> değil.</div></div>
+      <span class="chip good">VAR</span>
+    </div>
+  </section>
+
+  <section class="brgroup">
+    <h2><span class="tag">BR-A</span> Açık Artırma Yaşam Döngüsü</h2>
+    <p class="sub">Sniper koruması, rezerv fiyat ve süre sınırı dokümanla örtüşüyor — bu bölümün en güçlü kısmı</p>
+    <div class="rule">
+      <span class="id">BR-A-001/002</span>
+      <div class="body"><p>1 ilan = 1 açık artırma, başlangıç fiyatı &gt; 0</p></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-A-003</span>
+      <div class="body"><p>Opsiyonel gizli rezerv fiyat, sadece "ulaşıldı/ulaşılmadı" gösterilir</p></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-A-004</span>
+      <div class="body"><p>Süre 1 saat – 14 gün, hazır seçenekler 1/3/7/14 gün</p><div class="fixed">7 Eylül'de kapandı — backend'de 14 gün kontrolü, arayüzde "2 Hafta" seçeneği. Alt sınır (1 saat) kontrolü hâlâ yok.</div></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-A-005/009</span>
+      <div class="body"><p>Durumlar SCHEDULED→ACTIVE→ENDED_SOLD | ENDED_NO_BIDS | ENDED_RESERVE_NOT_MET | CANCELLED</p><div class="finding">Kodda tek bir <code>ENDED</code> durumu var, satılan/teklifsiz biten ayrımı sadece <code>winner</code> alanının dolu olup olmamasından anlaşılıyor — ayrı durum değerleri yok.</div></div>
+      <span class="chip warn">FARKLI</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-A-006</span>
+      <div class="body"><p>Sniper koruması: son 120sn, <code>şimdi+120sn</code> formülü, 20 uzatma tavanı</p><div class="finding">Bu üçü birebir doğru kurulmuş. Sadece dokümandaki 60 dakikalık ikinci (DB kısıtı) güvenlik ağı hiç eklenmemiş.</div></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-A-007/008/011</span>
+      <div class="body"><p>Sistem kapatır, kazanan=en yüksek geçerli teklif, sunucu zamanı tek kaynak</p></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-A-010</span>
+      <div class="body"><p>Kapanmış artırmaya teklif → 409 Conflict</p><div class="finding"><code>BidService</code> bu durumda düz <code>RuntimeException</code> fırlatıyor, bu da <code>GlobalExceptionHandler</code>'da 409 değil <strong>400</strong>'e dönüşüyor.</div></div>
+      <span class="chip warn">FARKLI</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-A-012</span>
+      <div class="body"><p>ADMIN aktif artırmayı iptal edebilir, teklifler VOIDED olur, gerekçe zorunlu</p></div>
+      <span class="chip gone">YOK</span>
+    </div>
+  </section>
+
+  <section class="brgroup">
+    <h2><span class="tag">BR-B</span> Teklif Verme</h2>
+    <p class="sub">Artış tablosu kapandı; eşzamanlılık ve mesaj kalitesi dokümana sadık</p>
+    <div class="rule">
+      <span class="id">BR-B-001</span>
+      <div class="body"><p>Teklif verebilmek için: giriş yapılmış, hesap ACTIVE, e-posta doğrulanmış, artırma ACTIVE ve süresi dolmamış</p><div class="finding">Giriş + artırma-aktif-mi kontrolleri var. Hesap durumu ve e-posta doğrulama kontrolleri, o sistemler hiç kurulmadığı için yok.</div></div>
+      <span class="chip warn">KISMİ</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-B-002</span>
+      <div class="body"><p>Satıcı kendi ilanına teklif veremez</p></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-B-003</span>
+      <div class="body"><p>Kademeli minimum artış tablosu</p><div class="fixed">7 Eylül'de kapandı — beş kademe de doğru, yüzdelik dilim dahil.</div></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-B-004</span>
+      <div class="body"><p>Aynı artırmada iki teklif aynı tutarda olamaz (DB kısıtı)</p><div class="finding">Böyle bir eşsizlik (unique) kısıtı bulunamadı.</div></div>
+      <span class="chip gone">YOK</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-B-005</span>
+      <div class="body"><p>Teklifler değiştirilemez/geri çekilemez; iptal sadece ADMIN'in VOIDED işaretlemesiyle</p><div class="finding">İlk yarısı (değiştirilemezlik) doğal olarak sağlanıyor — güncelleme/silme endpoint'i yok. VOIDED durumu ve admin iptali hiç yok.</div></div>
+      <span class="chip warn">KISMİ</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-B-006</span>
+      <div class="body"><p>En yüksek teklifi veren kendi teklifinin üzerine tekrar teklif veremez</p><div class="finding">Bu kontrol <code>BidService.placeBid</code>'de hâlâ yok — aynı kullanıcı üst üste teklif vererek fiyatı yapay şişirebilir.</div></div>
+      <span class="chip gone">YOK</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-B-007/008</span>
+      <div class="body"><p>Eşzamanlılık garantisi, atomik teklif+fiyat güncellemesi</p><div class="finding">Pesimistik kilit (<code>findByIdForUpdate</code>) ile tam olarak dokümanın istediği gibi kurulmuş — <code>ADR-0004</code>'le uyumlu.</div></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-B-009/010/011</span>
+      <div class="body"><p>1 saniyede WebSocket yayını, anlık "geçildin" bildirimi, ret mesajında minimum tutar</p></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-B-012</span>
+      <div class="body"><p>Teklifler IP adresi ve user-agent ile saklanır</p></div>
+      <span class="chip gone">YOK</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-B-013</span>
+      <div class="body"><p>Vekil (proxy) teklif</p><div class="finding">Doküman bunu bilerek v2'ye erteliyor (İLERİ seviye) — eksik sayılmadı.</div></div>
+      <span class="chip warn">v2'YE ERTELENDİ</span>
+    </div>
+  </section>
+
+  <section class="brgroup">
+    <h2><span class="tag">BR-N</span> Bildirim ve İletişim</h2>
+    <p class="sub">Tetikleyiciler ve transaction izolasyonu tamam; iletişim/puanlama tarafı hiç başlamadı</p>
+    <div class="rule">
+      <span class="id">BR-N-001</span>
+      <div class="body"><p>Tetikleyiciler: geçildin, kazandın, sattın, onaylandı/reddedildi, bitmek üzere, iptal edildi</p><div class="finding">"İptal edildi" hariç hepsi çalışıyor — iptal bildirimi, BR-A-012'nin kendisi olmadığı için yok.</div></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-N-002</span>
+      <div class="body"><p>Favorilenen ilan bitmek üzereyken uyarı</p><div class="finding">Kısmi index + toplu yazma + tur sınırıyla ölçeğe hazırlandı (yukarıdaki PERF bölümü).</div></div>
+      <span class="chip good">VAR</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-N-003/004</span>
+      <div class="body"><p>Kapanış sonrası kazanan↔satıcı iletişim bilgisi karşılıklı açılır, her ifşa kaydedilir</p><div class="finding">Böyle bir "iletişim bilgisi paylaşımı" akışı hiç yok — sadece isimler görünüyor.</div></div>
+      <span class="chip gone">YOK</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-N-006</span>
+      <div class="body"><p>Taraflar birbirini 1–5 puanlar, kapanıştan sonra 30 gün içinde</p><div class="finding">"Onaylı Satıcı" rozeti sabit metin, gerçek bir puanlama sistemine bağlı değil.</div></div>
+      <span class="chip gone">YOK</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-N-007</span>
+      <div class="body"><p>Bildirim hatası teklifi etkilememeli</p><div class="fixed">7 Eylül'de kapandı — bildirimler <code>AFTER_COMMIT</code> fazında yazılıyor, teklif o noktada çoktan commit edilmiş oluyor.</div></div>
+      <span class="chip good">VAR</span>
+    </div>
+  </section>
+
+  <section class="brgroup">
+    <h2><span class="tag">BR-S</span> Güvenlik</h2>
+    <p class="sub">Token süresi düzeldi ama arayüz tarafı eksik kaldı; üç öncelikli bulgu bu bölümde</p>
+    <div class="rule">
+      <span class="id">BR-S-001</span>
+      <div class="body"><p>Parolalar Argon2id ile hashlenir</p><div class="finding">Öncelikli bulgu #5 — <code>SecurityConfig:29</code> hâlâ <code>BCryptPasswordEncoder</code>.</div></div>
+      <span class="chip warn">FARKLI</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-S-002</span>
+      <div class="body"><p>Ayrıntılı hız sınırlama: giriş 5/dk/IP, teklif 10/dk+1/sn/artırma, kayıt 3/sa/IP, arama 60/dk</p><div class="finding"><code>RateLimitFilter</code> tek, genel bir sınır uyguluyor. Aksiyon bazlı ayrı limitler yok.</div></div>
+      <span class="chip warn">FARKLI</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-S-003</span>
+      <div class="body"><p>5 başarısız girişten sonra kademeli hesap kilidi</p></div>
+      <span class="chip gone">YOK</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-S-004</span>
+      <div class="body"><p>Yetkilendirme sunucu tarafında, metot seviyesinde</p><div class="finding">REST tarafında doğru kurulmuş. Ama WebSocket abonelikleri bu denetimin tamamen dışında — öncelikli bulgu #3.</div></div>
+      <span class="chip warn">KISMİ</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-S-005</span>
+      <div class="body"><p>Tüm trafik HTTPS, WebSocket <code>wss://</code> kullanır</p><div class="finding">Yerel geliştirme ortamı düz <code>http://</code>/<code>ws://</code> — bu kural sadece canlı (production) ortamda anlamlı.</div></div>
+      <span class="chip warn">DEĞERLENDİRİLEMEZ</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-S-006</span>
+      <div class="body"><p>Kritik işlemler (rol değişimi, ilan onay/ret, iptal) denetim kaydına yazılır</p><div class="finding">Herhangi bir <code>AuditLog</code> tablosu/mekanizması bulunamadı.</div></div>
+      <span class="chip gone">YOK</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-S-007</span>
+      <div class="body"><p>Dosya, gerçek içeriğine göre doğrulanır (magic number), EXIF temizlenir</p></div>
+      <span class="chip gone">YOK</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-S-008</span>
+      <div class="body"><p>15 dakikalık erişim token'ı + yenileme token'ı</p><div class="finding">Backend tam kuruldu: 15 dakikalık token, Redis destekli <code>RefreshTokenService</code>, httpOnly çerez, "beni hatırla". Ama arayüz tarafı hiç yazılmadı — öncelikli bulgu #2.</div></div>
+      <span class="chip warn">KISMİ</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-S-009</span>
+      <div class="body"><p>Arayüz 360px / 768px / 1280px kırılım noktalarında çalışır</p><div class="finding">Tailwind'in kendi varsayılan kırılım noktaları (640/768/1024/1280) kullanılıyor, dokümandaki 360px'e özel bir test/uyum yok.</div></div>
+      <span class="chip warn">KISMİ</span>
+    </div>
+    <div class="rule">
+      <span class="id">BR-S-010</span>
+      <div class="body"><p>XSS kaçışlama, parametreli SQL sorguları</p><div class="finding">React'ın varsayılan kaçışlaması + JPA/native <code>@Query</code>'lerdeki adlandırılmış parametreler bu kuralı doğal olarak sağlıyor.</div></div>
+      <span class="chip good">VAR</span>
+    </div>
+  </section>
+
+  <section class="brgroup">
+    <h2><span class="tag">BR-K</span> KVKK / Kişisel Veri</h2>
+    <p class="sub">6 kuralın 6'sı da uygulanmamış — bu bölüm sıfırdan başlıyor</p>
+    <div class="rule">
+      <span class="id">BR-K-001…006</span>
+      <div class="body"><p>Veri envanteri belgesi, veri taşınabilirliği, anonimleştirerek silme, ifşa kaydı, 2 yıl/6 ay otomatik temizlik, açık rıza kaydı</p><div class="finding">Hiçbiri koda geçmemiş — kullanıcı silme/anonimleştirme akışı, rıza zaman damgası, otomatik veri temizliği gibi mekanizmaların hiçbiri yok.</div></div>
+      <span class="chip gone">YOK</span>
+    </div>
+  </section>
+
+  <footer>
+    <span>business-rules.md v1.0 (2026-07-30) ile karşılaştırıldı</span>
+    <span>İlk denetim 3 Eylül 2026 · Son güncelleme 9 Eylül 2026, commit af6aa2d</span>
+  </footer>
+
+</div>
+</body>
+</html>
