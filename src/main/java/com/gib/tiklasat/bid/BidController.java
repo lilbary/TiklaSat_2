@@ -1,0 +1,61 @@
+package com.gib.tiklasat.bid;
+
+import com.gib.tiklasat.auth.JwtAuthenticationFilter;
+
+import com.gib.tiklasat.bid.BidCreateDto;
+import com.gib.tiklasat.bid.BidDto;
+import com.gib.tiklasat.bid.MyBidDto;
+import com.gib.tiklasat.bid.ReceivedBidDto;
+import com.gib.tiklasat.bid.BidService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/bids")
+@RequiredArgsConstructor
+public class BidController {
+
+    private final BidService bidService;
+
+    // YENİ TEKLİF VERME
+    @PostMapping
+    public ResponseEntity<BidDto> placeBid(@RequestBody BidCreateDto request, Authentication authentication) {
+        // authentication.getPrincipal(): JwtAuthenticationFilter'ın SecurityContextHolder'a
+        // yazdığı, o an giriş yapmış kullanıcının email'i (bkz. JwtAuthenticationFilter.java).
+        String bidderEmail = (String) authentication.getPrincipal();
+
+        return ResponseEntity.ok(
+            bidService.placeBid(request.getAuctionId(), bidderEmail, request.getAmount())
+        );
+    }
+
+    // BİR AÇIK ARTIRMANIN TEKLİF GEÇMİŞİNİ GETİR
+    @GetMapping("/auction/{auctionId}")
+    public ResponseEntity<List<BidDto>> getBidHistory(@PathVariable UUID auctionId) {
+        return ResponseEntity.ok(bidService.getBidHistory(auctionId));
+    }
+
+    // KULLANICININ TEKLİF VERDİĞİ TÜM AÇIK ARTIRMALAR
+    @GetMapping("/mine")
+    public ResponseEntity<List<MyBidDto>> getMyBids(Authentication authentication) {
+        String userEmail = (String) authentication.getPrincipal();
+        return ResponseEntity.ok(bidService.getMyBids(userEmail));
+    }
+
+    // İLANLARIMA VERİLMİŞ TÜM TEKLİFLER (Satıcı gözünden)
+    @GetMapping("/received")
+    public ResponseEntity<List<ReceivedBidDto>> getReceivedBids(Authentication authentication) {
+        String sellerEmail = (String) authentication.getPrincipal();
+        return ResponseEntity.ok(bidService.getReceivedBids(sellerEmail));
+    }
+}
