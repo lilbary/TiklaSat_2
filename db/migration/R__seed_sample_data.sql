@@ -2,6 +2,10 @@
 -- TıklaSat · Repeatable Migration · Zengin Örnek Veriler (Seed Data)
 -- =====================================================================
 
+-- Mesajlaşma (V27) users'tan önce temizlenmeli: messages.sender_id üzerinde
+-- CASCADE yok, dolayısıyla kullanıcı silinmeden mesajların gitmesi gerekiyor.
+DELETE FROM messages;
+DELETE FROM conversations;
 DELETE FROM bids;
 DELETE FROM favorites;
 DELETE FROM notifications;
