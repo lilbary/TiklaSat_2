@@ -2,6 +2,10 @@ import { createContext, useContext, useState, useEffect } from 'react'
 
 const AuthContext = createContext(null)
 
+// Aşağıdaki interceptor window.fetch'i sarmalıyor. Yenileme isteğinin
+// SARMALANMAMIŞ fetch'i kullanması şart, yoksa kendi kendini tetikler.
+const nativeFetch = window.fetch.bind(window)
+
 function decodeToken(token) {
   try {
     const base64Url = token.split('.')[1]
@@ -14,121 +18,182 @@ function decodeToken(token) {
   }
 }
 
+// Token'ın ömrü bitmek üzere mi?
+// exp saniye cinsinden, Date.now() milisaniye — 1000 ile çarpmak şart.
+// 60 saniyelik pay bırakıyoruz: sunucu ile tarayıcı saati birkaç saniye
+// kayabilir ve token isteğin yolda geçtiği sürede ölmemeli.
+function isExpiringSoon(token, marginSeconds = 60) {
+  const payload = decodeToken(token)
+  if (!payload?.exp) return true
+  return payload.exp * 1000 - Date.now() < marginSeconds * 1000
+}
+
+// Token hâlâ rahatça kullanılabilir mi?
+function isUsable(token) {
+  return Boolean(token) && !isExpiringSoon(token)
+}
+
+// Aynı anda beş istek birden yenileme tetiklerse /api/auth/refresh'e beş kez
+// gidilmesin diye ortak kilit. Modül seviyesinde duruyor çünkü hem açılıştaki
+// sessiz giriş hem de interceptor AYNI kilidi paylaşmak zorunda; iki ayrı
+// kilit olsaydı açılışta iki yenileme isteği birden giderdi.
+let refreshPromise = null
+
+function refreshAccessToken() {
+  if (!refreshPromise) {
+    refreshPromise = nativeFetch('/api/auth/refresh', { method: 'POST' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => data?.token ?? null)
+      .catch(() => null)
+      .finally(() => {
+        refreshPromise = null
+      })
+  }
+  return refreshPromise
+}
+
 export function AuthProvider({ children }) {
+  // Elimizdeki token hâlâ geçerliyse kullanıcıyı ilk render'da kuruyoruz ki
+  // sayfa açılışında "giriş yap" yazısı bir an görünüp kaybolmasın.
+  // Süresi dolmuşsa null başlıyoruz, kararı aşağıdaki sessiz yenileme veriyor.
   const [user, setUser] = useState(() => {
     const token = localStorage.getItem('token')
-    return token ? decodeToken(token) : null
+    return isUsable(token) ? decodeToken(token) : null
   })
 
-  // Sadece context fonksiyonları
+  // Açılışta sessiz yenileme sürüyor mu? Sayfalar isterse bunu bekleyebilir.
+  // Sadece elimizde ESKİMİŞ bir token varsa deniyoruz: bu, kullanıcının daha
+  // önce giriş yaptığının işareti ve refresh çerezi hâlâ duruyor olabilir.
+  // Hiç token yoksa ziyaretçi zaten girişsiz; boşuna istek atıp konsola
+  // kırmızı 401 yazdırmıyoruz.
+  const [booting, setBooting] = useState(() => {
+    const token = localStorage.getItem('token')
+    return Boolean(token) && !isUsable(token)
+  })
+
   const handleLogin = (token) => {
     localStorage.setItem('token', token)
     setUser(decodeToken(token))
   }
 
   const handleLogout = async () => {
-    // Önce Backend'e çıkış isteği at (Çerezi silmesi için)
+    // Backend'e haber ver: Redis'teki refresh token silinsin, çerez temizlensin.
+    // Sarmalanmamış fetch kullanıyoruz ki bu istek interceptor'dan geçmesin.
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await nativeFetch('/api/auth/logout', { method: 'POST' })
     } catch (e) {
-      console.error("Backend çıkış hatası", e);
+      console.error('Backend çıkış hatası', e)
     }
-    
+
     localStorage.removeItem('token')
     setUser(null)
   }
 
-  // GLOBAL FETCH INTERCEPTOR
+  // ---------------------------------------------------------------------
+  // AÇILIŞTA SESSİZ GİRİŞ
+  // Eskiden localStorage'daki token exp'e bakılmadan çözülüyordu: süresi
+  // dolmuş olsa bile kullanıcı "girişli" görünüyor ama her istek patlıyordu.
+  // Üstelik 30 günlük "beni hatırla" çerezi hiç kullanılmıyordu — kullanıcı
+  // ertesi gün geldiğinde kendini girişli sanıyor, hiçbir şey çalışmıyordu.
+  // ---------------------------------------------------------------------
   useEffect(() => {
-    const originalFetch = window.fetch;
-    
-    // Refresh işlemi devam ederken aynı anda gelen 5 isteği bekletmek için kilit
-    let isRefreshing = false; 
-    let refreshSubscribers = [];
+    if (!booting) return
 
-    const onRefreshed = (token) => {
-      refreshSubscribers.forEach((cb) => cb(token));
-      refreshSubscribers = [];
-    };
+    let iptalEdildi = false
+
+    // Token yok ya da ölmüş. Tarayıcıda hâlâ httpOnly refresh çerezi
+    // olabilir; sessizce yeni bir access token iste.
+    refreshAccessToken().then((yeniToken) => {
+      if (iptalEdildi) return
+
+      if (yeniToken) {
+        localStorage.setItem('token', yeniToken)
+        setUser(decodeToken(yeniToken))
+      } else {
+        // Çerez de yok/bitmiş: ölü token'ı temizle.
+        localStorage.removeItem('token')
+        setUser(null)
+      }
+      setBooting(false)
+    })
+
+    return () => {
+      iptalEdildi = true
+    }
+  }, [booting])
+
+  // ---------------------------------------------------------------------
+  // GLOBAL FETCH INTERCEPTOR
+  // ---------------------------------------------------------------------
+  useEffect(() => {
+    const originalFetch = window.fetch
 
     window.fetch = async (...args) => {
-      let [resource, config] = args;
+      let [resource, config] = args
 
-      // 1. İstek bizim backendimize gidiyorsa (ve login/refresh değilse) token'ı ekle
-      if (typeof resource === 'string' && resource.startsWith('/api') && !resource.startsWith('/api/auth/')) {
-        const token = localStorage.getItem('token');
-        if (token) {
-          config = config || {};
-          config.headers = {
-            ...config.headers,
-            'Authorization': `Bearer ${token}`
-          };
-        }
-      }
+      // Kendi backend'imize giden, auth dışındaki istekler.
+      const korumaliUc =
+        typeof resource === 'string' &&
+        resource.startsWith('/api') &&
+        !resource.startsWith('/api/auth/')
 
-      // 2. Orijinal isteği yap
-      let response = await originalFetch(resource, config);
+      if (korumaliUc) {
+        let token = localStorage.getItem('token')
 
-      // 3. Eğer 401 Yetkisiz hatası aldıysak ve bu bir auth isteği değilse (sonsuz döngüyü önle)
-      if (response.status === 401 && typeof resource === 'string' && !resource.startsWith('/api/auth/')) {
-        
-        // Eğer zaten başka bir istek refresh yapıyorsa, onu bekle
-        if (isRefreshing) {
-          return new Promise((resolve) => {
-            refreshSubscribers.push((newToken) => {
-              if (newToken) {
-                // Token yenilendi, orijinal isteği yeni token ile tekrar yap
-                config.headers['Authorization'] = `Bearer ${newToken}`;
-                resolve(originalFetch(resource, config));
-              } else {
-                resolve(response); // Yenilenemediyse orijinal 401'i dön
-              }
-            });
-          });
-        }
-
-        // İlk 401 alan istek buraya girer ve Refresh işlemini başlatır
-        isRefreshing = true;
-
-        try {
-          const refreshResponse = await originalFetch('/api/auth/refresh', {
-            method: 'POST',
-            // Çerezler tarayıcı tarafından otomatik gönderilir (credentials: 'include' varsayılan değilse bile Spring CookieValue yakalıyor)
-          });
-
-          if (refreshResponse.ok) {
-            const data = await refreshResponse.json();
-            handleLogin(data.token); // Yeni token'ı kaydet
-            onRefreshed(data.token); // Bekleyen diğer isteklere haber ver
-            
-            // Başarısız olan bu orijinal isteği YENİ token ile tekrar et
-            config.headers['Authorization'] = `Bearer ${data.token}`;
-            response = await originalFetch(resource, config);
-          } else {
-            // Refresh başarısız olduysa (Çerez de bitmişse/30 gün geçmişse)
-            handleLogout();
-            onRefreshed(null);
-            window.location.href = '/giris'; // Kullanıcıyı girişe at
+        // ÖNGÖRÜLÜ YENİLEME: token ölmek üzereyse isteği GÖNDERMEDEN önce
+        // yenile. Eskiden akış "gönder → patla → yenile → tekrar gönder"
+        // olduğu için kullanıcı her 15 dakikada bir başarısız bir istek
+        // yaşıyordu. Artık yaşamıyor.
+        if (token && isExpiringSoon(token)) {
+          const yeniToken = await refreshAccessToken()
+          if (yeniToken) {
+            localStorage.setItem('token', yeniToken)
+            setUser(decodeToken(yeniToken))
+            token = yeniToken
           }
-        } catch (error) {
-          handleLogout();
-          onRefreshed(null);
-        } finally {
-          isRefreshing = false;
+        }
+
+        if (token) {
+          config = { ...(config || {}) }
+          config.headers = { ...config.headers, Authorization: `Bearer ${token}` }
         }
       }
 
-      return response;
-    };
+      let response = await originalFetch(resource, config)
 
-    // Cleanup: Component unmount olursa (neredeyse hiç olmaz ama adettendir) eski fetch'i geri koy
+      // EMNİYET AĞI: öngörülü yenileme kaçırmış olabilir (saat kayması, başka
+      // sekmede çıkış yapılması, sunucunun yeniden başlaması). 401 gelirse
+      // bir kez yenileyip isteği tekrarlıyoruz.
+      if (response.status === 401 && korumaliUc) {
+        const yeniToken = await refreshAccessToken()
+
+        if (yeniToken) {
+          localStorage.setItem('token', yeniToken)
+          setUser(decodeToken(yeniToken))
+          config = { ...(config || {}) }
+          config.headers = { ...config.headers, Authorization: `Bearer ${yeniToken}` }
+          response = await originalFetch(resource, config)
+        } else {
+          // Yenileme de başarısız: refresh çerezi bitmiş ya da iptal edilmiş.
+          localStorage.removeItem('token')
+          setUser(null)
+          if (window.location.pathname !== '/giris') {
+            window.location.href = '/giris'
+          }
+        }
+      }
+
+      return response
+    }
+
+    // Component kalkarsa orijinal fetch'i geri koy.
     return () => {
-      window.fetch = originalFetch;
-    };
-  }, []);
+      window.fetch = originalFetch
+    }
+  }, [])
 
   return (
-    <AuthContext.Provider value={{ user, login: handleLogin, logout: handleLogout }}>
+    <AuthContext.Provider value={{ user, booting, login: handleLogin, logout: handleLogout }}>
       {children}
     </AuthContext.Provider>
   )

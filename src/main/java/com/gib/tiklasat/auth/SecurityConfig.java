@@ -59,7 +59,28 @@ public class SecurityConfig {
                     return corsConfig;
                 }))
                 .csrf(csrf -> csrf.disable()) // API yazdığımız için CSRF korumasına gerek yok
+
+                // Kimliği doğrulanmamış istek 403 değil 401 almalı.
+                // 401 = "kim olduğunu kanıtlayamadın", 403 = "kimliğin belli ama yetkin yok".
+                // Bu ayrım olmadan frontend'deki otomatik token yenileme hiç tetiklenmiyordu:
+                // AuthContext 401'e bakıyor, biz ise geçersiz/süresi dolmuş token'a da 403 dönüyorduk.
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write(
+                                    "{\"status\":401,\"error\":\"Unauthorized\","
+                                            + "\"message\":\"Oturum açmanız gerekiyor veya süreniz doldu.\"}");
+                        })
+                )
                 .authorizeHttpRequests(auth -> auth
+                        // Spring, 403/500 üretirken isteği içeriden /error'a yönlendiriyor ve bu
+                        // yönlendirme güvenlik zincirinden BİR KEZ DAHA geçiyor. STATELESS olduğumuz
+                        // için o ikinci geçişte SecurityContext boş; istek anonim sayılıp
+                        // anyRequest().authenticated() kuralına takılıyor ve entry point gerçek
+                        // 403'ün üstüne 401 yazıyor. Iç yönlendirmeyi kontrolden muaf tutuyoruz.
+                        .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
+
                         // 1. GİRİŞ VE KAYIT SAYFASI HERKESE AÇIK OLMALI
                         .requestMatchers("/api/auth/**").permitAll()
 

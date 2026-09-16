@@ -42,8 +42,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // "Bearer " kelimesinden sonrasını (Bileti) al.
         jwt = authHeader.substring(7);
-        // Biletten Email adresini oku
-        userEmail = jwtService.extractUsername(jwt);
+
+        // Biletten Email adresini oku. Bilet bozuksa, süresi dolmuşsa veya imzası
+        // sahteyse kütüphane TAM BURADA istisna fırlatıyor. Bu istisna eskiden
+        // filtreden dışarı sızıp 500 üretiyordu; hata sayfasına yapılan iç
+        // yönlendirme onu 403 gibi gösterdiği için fark edilmiyordu. Artık
+        // yakalıyoruz ve isteği "kimliksiz" olarak devam ettiriyoruz; korumalı
+        // uçta yetki kontrolü düzgün biçimde 401 döndürüyor.
+        try {
+            userEmail = jwtService.extractUsername(jwt);
+        } catch (Exception e) {
+            logger.debug("Gecersiz JWT, istek kimliksiz devam ediyor: " + e.getMessage());
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // Eğer biletten Email çıktıysa ve sistemde o an kimse giriş yapmamış görünüyorsa:
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
