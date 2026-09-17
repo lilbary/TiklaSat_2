@@ -36,6 +36,10 @@ export function AuctionCard({ auction, fullWidth = false, actionSlot = null }) {
             src={auction.imageUrls[0]}
             alt={auction.listingTitle}
             className="h-44 w-full rounded-xl object-cover"
+            onError={(e) => {
+              e.target.onerror = null
+              e.target.src = 'https://picsum.photos/800/600'
+            }}
           />
         ) : (
           <Placeholder

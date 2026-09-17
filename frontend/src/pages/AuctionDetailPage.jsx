@@ -181,6 +181,10 @@ function AuctionDetailPage() {
                 src={images[selectedImage]}
                 alt={auction.listingTitle}
                 className="aspect-square w-full rounded-2xl object-cover"
+                onError={(e) => {
+                  e.target.onerror = null
+                  e.target.src = 'https://picsum.photos/800/600'
+                }}
               />
             ) : (
               <ImagePlaceholder letter={auction.listingTitle.charAt(0)} />
@@ -205,6 +209,10 @@ function AuctionDetailPage() {
                       ? 'ring-2 ring-red-500'
                       : 'opacity-70 ring-1 ring-slate-200 hover:opacity-100'
                   }`}
+                  onError={(e) => {
+                    e.target.onerror = null
+                    e.target.src = 'https://picsum.photos/800/600'
+                  }}
                 />
               ))}
             </div>

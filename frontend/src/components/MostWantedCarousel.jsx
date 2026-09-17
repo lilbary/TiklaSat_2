@@ -50,6 +50,10 @@ function MosaicTile({ auction, styleIndex, className }) {
         src={auction.imageUrls[0]}
         alt={auction.listingTitle}
         className={`h-full w-full rounded-2xl object-cover ${className}`}
+        onError={(e) => {
+          e.target.onerror = null
+          e.target.src = 'https://picsum.photos/800/600'
+        }}
       />
     )
   }

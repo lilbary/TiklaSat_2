@@ -17,22 +17,22 @@ DELETE FROM user_roles;
 DELETE FROM users;
 
 INSERT INTO users (id, email, full_name, password_hash, phone, created_at) VALUES
-('33333333-3333-3333-3333-333333333333', 'admin@tiklasat.com', 'Sistem Admini', '$2a$10$wOItR2aQyT10xW7D0I.V2eY/XwG3E.7Tz36m8t0k.mX/1.5M/03jO', '5550000000', now()),
-('11111111-1111-1111-1111-000000000001', 'satici1@tiklasat.com', 'Satıcı 1', '$2a$10$wOItR2aQyT10xW7D0I.V2eY/XwG3E.7Tz36m8t0k.mX/1.5M/03jO', '5551110000', now()),
-('11111111-1111-1111-1111-000000000002', 'satici2@tiklasat.com', 'Satıcı 2', '$2a$10$wOItR2aQyT10xW7D0I.V2eY/XwG3E.7Tz36m8t0k.mX/1.5M/03jO', '5551110001', now()),
-('11111111-1111-1111-1111-000000000003', 'satici3@tiklasat.com', 'Satıcı 3', '$2a$10$wOItR2aQyT10xW7D0I.V2eY/XwG3E.7Tz36m8t0k.mX/1.5M/03jO', '5551110002', now()),
-('11111111-1111-1111-1111-000000000004', 'satici4@tiklasat.com', 'Satıcı 4', '$2a$10$wOItR2aQyT10xW7D0I.V2eY/XwG3E.7Tz36m8t0k.mX/1.5M/03jO', '5551110003', now()),
-('11111111-1111-1111-1111-000000000005', 'satici5@tiklasat.com', 'Satıcı 5', '$2a$10$wOItR2aQyT10xW7D0I.V2eY/XwG3E.7Tz36m8t0k.mX/1.5M/03jO', '5551110004', now()),
-('22222222-2222-2222-2222-000000000001', 'alici1@tiklasat.com', 'Alıcı 1', '$2a$10$wOItR2aQyT10xW7D0I.V2eY/XwG3E.7Tz36m8t0k.mX/1.5M/03jO', '5552220000', now()),
-('22222222-2222-2222-2222-000000000002', 'alici2@tiklasat.com', 'Alıcı 2', '$2a$10$wOItR2aQyT10xW7D0I.V2eY/XwG3E.7Tz36m8t0k.mX/1.5M/03jO', '5552220001', now()),
-('22222222-2222-2222-2222-000000000003', 'alici3@tiklasat.com', 'Alıcı 3', '$2a$10$wOItR2aQyT10xW7D0I.V2eY/XwG3E.7Tz36m8t0k.mX/1.5M/03jO', '5552220002', now()),
-('22222222-2222-2222-2222-000000000004', 'alici4@tiklasat.com', 'Alıcı 4', '$2a$10$wOItR2aQyT10xW7D0I.V2eY/XwG3E.7Tz36m8t0k.mX/1.5M/03jO', '5552220003', now()),
-('22222222-2222-2222-2222-000000000005', 'alici5@tiklasat.com', 'Alıcı 5', '$2a$10$wOItR2aQyT10xW7D0I.V2eY/XwG3E.7Tz36m8t0k.mX/1.5M/03jO', '5552220004', now()),
-('22222222-2222-2222-2222-000000000006', 'alici6@tiklasat.com', 'Alıcı 6', '$2a$10$wOItR2aQyT10xW7D0I.V2eY/XwG3E.7Tz36m8t0k.mX/1.5M/03jO', '5552220005', now()),
-('22222222-2222-2222-2222-000000000007', 'alici7@tiklasat.com', 'Alıcı 7', '$2a$10$wOItR2aQyT10xW7D0I.V2eY/XwG3E.7Tz36m8t0k.mX/1.5M/03jO', '5552220006', now()),
-('22222222-2222-2222-2222-000000000008', 'alici8@tiklasat.com', 'Alıcı 8', '$2a$10$wOItR2aQyT10xW7D0I.V2eY/XwG3E.7Tz36m8t0k.mX/1.5M/03jO', '5552220007', now()),
-('22222222-2222-2222-2222-000000000009', 'alici9@tiklasat.com', 'Alıcı 9', '$2a$10$wOItR2aQyT10xW7D0I.V2eY/XwG3E.7Tz36m8t0k.mX/1.5M/03jO', '5552220008', now()),
-('22222222-2222-2222-2222-000000000010', 'alici10@tiklasat.com', 'Alıcı 10', '$2a$10$wOItR2aQyT10xW7D0I.V2eY/XwG3E.7Tz36m8t0k.mX/1.5M/03jO', '5552220009', now());
+('33333333-3333-3333-3333-333333333333', 'admin@tiklasat.com', 'Sistem Admini', '$2a$10$4uBKf65K06epYVO3CY48huQQWeV4BprinwdqCw73.pc7.hR3uG5o.', '5550000000', now()),
+('11111111-1111-1111-1111-000000000001', 'satici1@tiklasat.com', 'Satıcı 1', '$2a$10$4uBKf65K06epYVO3CY48huQQWeV4BprinwdqCw73.pc7.hR3uG5o.', '5551110000', now()),
+('11111111-1111-1111-1111-000000000002', 'satici2@tiklasat.com', 'Satıcı 2', '$2a$10$4uBKf65K06epYVO3CY48huQQWeV4BprinwdqCw73.pc7.hR3uG5o.', '5551110001', now()),
+('11111111-1111-1111-1111-000000000003', 'satici3@tiklasat.com', 'Satıcı 3', '$2a$10$4uBKf65K06epYVO3CY48huQQWeV4BprinwdqCw73.pc7.hR3uG5o.', '5551110002', now()),
+('11111111-1111-1111-1111-000000000004', 'satici4@tiklasat.com', 'Satıcı 4', '$2a$10$4uBKf65K06epYVO3CY48huQQWeV4BprinwdqCw73.pc7.hR3uG5o.', '5551110003', now()),
+('11111111-1111-1111-1111-000000000005', 'satici5@tiklasat.com', 'Satıcı 5', '$2a$10$4uBKf65K06epYVO3CY48huQQWeV4BprinwdqCw73.pc7.hR3uG5o.', '5551110004', now()),
+('22222222-2222-2222-2222-000000000001', 'alici1@tiklasat.com', 'Alıcı 1', '$2a$10$4uBKf65K06epYVO3CY48huQQWeV4BprinwdqCw73.pc7.hR3uG5o.', '5552220000', now()),
+('22222222-2222-2222-2222-000000000002', 'alici2@tiklasat.com', 'Alıcı 2', '$2a$10$4uBKf65K06epYVO3CY48huQQWeV4BprinwdqCw73.pc7.hR3uG5o.', '5552220001', now()),
+('22222222-2222-2222-2222-000000000003', 'alici3@tiklasat.com', 'Alıcı 3', '$2a$10$4uBKf65K06epYVO3CY48huQQWeV4BprinwdqCw73.pc7.hR3uG5o.', '5552220002', now()),
+('22222222-2222-2222-2222-000000000004', 'alici4@tiklasat.com', 'Alıcı 4', '$2a$10$4uBKf65K06epYVO3CY48huQQWeV4BprinwdqCw73.pc7.hR3uG5o.', '5552220003', now()),
+('22222222-2222-2222-2222-000000000005', 'alici5@tiklasat.com', 'Alıcı 5', '$2a$10$4uBKf65K06epYVO3CY48huQQWeV4BprinwdqCw73.pc7.hR3uG5o.', '5552220004', now()),
+('22222222-2222-2222-2222-000000000006', 'alici6@tiklasat.com', 'Alıcı 6', '$2a$10$4uBKf65K06epYVO3CY48huQQWeV4BprinwdqCw73.pc7.hR3uG5o.', '5552220005', now()),
+('22222222-2222-2222-2222-000000000007', 'alici7@tiklasat.com', 'Alıcı 7', '$2a$10$4uBKf65K06epYVO3CY48huQQWeV4BprinwdqCw73.pc7.hR3uG5o.', '5552220006', now()),
+('22222222-2222-2222-2222-000000000008', 'alici8@tiklasat.com', 'Alıcı 8', '$2a$10$4uBKf65K06epYVO3CY48huQQWeV4BprinwdqCw73.pc7.hR3uG5o.', '5552220007', now()),
+('22222222-2222-2222-2222-000000000009', 'alici9@tiklasat.com', 'Alıcı 9', '$2a$10$4uBKf65K06epYVO3CY48huQQWeV4BprinwdqCw73.pc7.hR3uG5o.', '5552220008', now()),
+('22222222-2222-2222-2222-000000000010', 'alici10@tiklasat.com', 'Alıcı 10', '$2a$10$4uBKf65K06epYVO3CY48huQQWeV4BprinwdqCw73.pc7.hR3uG5o.', '5552220009', now());
 
 INSERT INTO user_roles (user_id, role) VALUES
 ('33333333-3333-3333-3333-333333333333', 'ADMIN'),
